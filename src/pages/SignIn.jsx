@@ -2,14 +2,14 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { setPageTitle } from "../utils/utils";
 import { NavLink, useNavigate } from "react-router-dom";
-//import { useAuth } from "../utils/AuthProvider.jsx";
+import { useAuth } from "../utils/AuthProvider.jsx";
+import { logInWithEmailAndPassword } from "../firebase/auth.js";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import logo from "../assets/react.svg";
 
 export const SignIn = (props) => {
-  //const { user } = useAuth();
-  //const user = {};
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -21,26 +21,26 @@ export const SignIn = (props) => {
   }, []);
 
   // Transition to Dashboard when user authentication is successful
-  /*
+
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
-*/
+
   const handleSignIn = async (e) => {
     e.preventDefault();
 
     try {
-      const error = false;
+      const user = await logInWithEmailAndPassword(email, password);
 
-      if (error) {
-        throw error;
+      if (!user) {
+        throw new Error("No user with those credentials");
       }
       navigate("/dashboard");
     } catch (error) {
       setError(error.message);
-      console.error("User failed to signed in", error);
+      console.error("User failed to signed in: ", error);
     }
   };
   return (

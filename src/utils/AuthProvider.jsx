@@ -1,54 +1,45 @@
 import PropTypes from "prop-types";
 import { useState, useEffect, createContext, useContext } from "react";
+import { auth, firestore } from "../firebase/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { getDoc, doc } from "firebase/firestore";
 
 // For sharing the user state across the app
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Retrieve the session information
   useEffect(() => {
-    const fetchSession = async () => {
-      setLoading(true);
-      try {
-        //const { data, error } = await supabase.auth.getSession();
-        const error = "Error";
-        if (error) {
-          throw error;
-        }
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Fetch user document from Firestore
+        const userDocRef = doc(firestore, "admins", currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
 
-        //const session = data?.session;
-        const session = { user: { username: "test" } };
-        if (session) {
-          setUser(session.user);
+        if (userDocSnap.exists()) {
+          setUser({ ...userDocSnap.data(), uid: currentUser.uid });
         } else {
-          setUser(null);
+          setUser({ email: currentUser.email, uid: currentUser.uid }); // Fallback if no Firestore data
         }
-        console.log(session);
-      } catch (error) {
-        console.log(error);
+      } else {
         setUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
+      setLoading(false);
+    });
 
-    // Fetch the user from supabase
-    fetchSession();
+    return () => unsubscribe();
   }, []);
 
   // Sign out the user
   const handleSignOut = async () => {
-    // Sign out from supabase autehtication
     try {
+      await signOut(auth);
       setUser(null);
     } catch (error) {
       console.error("User failed to sign out", error);
-      setUser(null);
-      window.localStorage.clear();
-      return;
     }
   };
 

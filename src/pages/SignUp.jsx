@@ -3,14 +3,16 @@ import { useState, useEffect } from "react";
 import { setPageTitle } from "../utils/utils";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
+import { signUpWithEmailAndPassword } from "../firebase/auth.js";
 import Grid from "@mui/material/Grid2";
 import logo from "../assets/react.svg";
-//import { useAuth } from "../utils/AuthProvider";
+import { useAuth } from "../utils/AuthProvider";
 
 export const SignUp = (props) => {
-  //const { user } = useAuth();
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [company, setCompany] = useState("");
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
   const navigate = useNavigate();
@@ -22,21 +24,22 @@ export const SignUp = (props) => {
   }, []);
 
   // Transition to Dashboard when user authentication is successful
-  /*
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
     }
   }, [user, navigate]);
-  */
+
   const handleSignUp = async (e) => {
     e.preventDefault();
 
     try {
-      //const data = {};
-      const error = false;
-      if (error) {
-        throw error;
+      const user = await signUpWithEmailAndPassword(email, password, {
+        name: name,
+        company: company,
+      });
+      if (!user) {
+        throw new Error("No user with those credentials");
       }
       navigate("/dashboard");
     } catch (error) {
@@ -123,6 +126,18 @@ export const SignUp = (props) => {
                   value={password}
                   sx={{ marginTop: 1 }}
                   onChange={(e) => setPassword(e.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="company"
+                  label="Company"
+                  id="company"
+                  value={company}
+                  sx={{ marginTop: 1 }}
+                  onChange={(e) => setCompany(e.target.value)}
                 />
                 {error && <Typography color="error">{error}</Typography>}
                 <Button type="submit" variant="contained" sx={{ mt: 1, mb: 2 }}>

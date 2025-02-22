@@ -6,13 +6,14 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+import { AuthProvider } from "./utils/AuthProvider";
 import { MainLayout } from "./layouts/MainLayout";
 import { SignIn } from "./pages/SignIn";
 import { SignUp } from "./pages/SignUp";
 import { Dashboard } from "./pages/Dashboard";
 import { NotFound } from "./pages/NotFound";
 import { ServerError } from "./pages/ServerError";
-//import { useAuth } from "./utils/AuthProvider";
+import { useAuth } from "./utils/AuthProvider";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
 import { CssBaseline } from "@mui/material";
@@ -24,9 +25,21 @@ import { Profile } from "./pages/Profile";
 import { DriverDetails } from "./pages/DriverDetails";
 
 function App() {
-  //const { user, loading } = useAuth();
-  const user = {};
-  const loading = false;
+  return (
+    // Wrapped with ThemeProvider to apply theme.js styles
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline>
+          <BrowserProvider>
+            <ProtectedRoutes />
+          </BrowserProvider>
+        </CssBaseline>
+      </ThemeProvider>
+    </AuthProvider>
+  );
+}
+function ProtectedRoutes() {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return null;
@@ -47,7 +60,7 @@ function App() {
         {/* Authentication required (MainLayout is applied) */}
         <Route
           path="/"
-          element={user ? <MainLayout /> : loading ? null : <Navigate to="/" />}
+          element={user ? <MainLayout /> : <Navigate to="/signin" />}
         >
           <Route path="/dashboard" element={<Dashboard title="Dashboard" />} />
           <Route path="/manage" element={<Manage title="Manage Drivers" />} />
@@ -57,21 +70,11 @@ function App() {
 
         <Route path="/error" element={<ServerError title="Server Error" />} />
         <Route path="*" element={<NotFound title="Not found" />} />
-        {/* Authentication required (MainLayout is NOT applied) */}
       </>
     )
   );
 
-  return (
-    // Wrapped with ThemeProvider to apply theme.js styles
-    <ThemeProvider theme={theme}>
-      <CssBaseline>
-        <BrowserProvider>
-          <RouterProvider router={router} />
-        </BrowserProvider>
-      </CssBaseline>
-    </ThemeProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

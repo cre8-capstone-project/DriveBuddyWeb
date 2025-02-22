@@ -6,7 +6,7 @@ import { Footer } from "../components/Footer";
 import theme from "../theme";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { AppProvider } from "@toolpad/core/AppProvider";
-//import { useAuth } from "../utils/AuthProvider.jsx";
+import { useAuth } from "../utils/AuthProvider.jsx";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import DriveEtaIcon from "@mui/icons-material/DriveEta";
 import PersonIcon from "@mui/icons-material/Person";
@@ -37,14 +37,17 @@ const NavBar = [
 export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  //const { user, handleSignOut } = useAuth();
-  const user = {};
+  const { user, handleSignOut } = useAuth();
+  useEffect(() => {
+    console.log(user);
+    console.log(user?.name, user?.email, user?.company);
+  }, [user]);
 
   // Session State from Toolpad Core
   const [session, setSession] = useState({
     user: {
-      name: "User",
-      email: "user@test.com",
+      name: user?.name || "",
+      email: user?.email || "",
       image: "",
     },
   });
@@ -62,7 +65,7 @@ export const MainLayout = () => {
         navigate("/dashboard");
       },
       signOut: () => {
-        //handleSignOut();
+        handleSignOut();
         navigate("/");
       },
     };
