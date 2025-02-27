@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Table,
   TableBody,
@@ -69,11 +70,32 @@ const DriverManagement = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (formData.id) {
       setDrivers(drivers.map((d) => (d.id === formData.id ? formData : d)));
     } else {
-      setDrivers([...drivers, { ...formData, id: drivers.length + 1 }]);
+      const newDriver = { ...formData, id: drivers.length + 1 };
+      setDrivers([...drivers, newDriver]);
+
+      // Send invitation email via Firebase Function
+      const functions = getFunctions();
+      const sendDriverInvitation = httpsCallable(
+        functions,
+        "sendDriverInvitation"
+      );
+
+      try {
+        const result = await sendDriverInvitation({
+          email: newDriver.email,
+          name: newDriver.name,
+        });
+
+        // The response data is in result.data
+        console.log("Invitation email sent successfully:", result.data);
+      } catch (error) {
+        console.error("Failed to send email:");
+        console.log(error);
+      }
     }
     handleClose();
   };
