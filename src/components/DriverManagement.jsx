@@ -1,4 +1,15 @@
 import { useEffect, useState } from "react";
+import { firestore } from "../firebase/firebase";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  doc,
+  where,
+} from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Table,
@@ -19,8 +30,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { useAuth } from "../utils/AuthProvider";
+import { generateInvitationCode } from "../utils/utils";
 
 const DriverManagement = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -32,31 +46,90 @@ const DriverManagement = () => {
       fontSize: 14,
     },
   }));
-  const [drivers, setDrivers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "123-456-7890",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "987-654-3210",
-    },
-  ]);
+  const driversCollectionRef = collection(firestore, "driver");
+  const invitationCollectionRef = collection(firestore, "invitations");
+  const [drivers, setDrivers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
+
   const [open, setOpen] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     id: null,
     name: "",
     email: "",
     phone: "",
   });
+  const fetchInvitations = async () => {
+    try {
+      // Create a reference to the drivers collection
 
+      const invitationsQuery = query(
+        invitationCollectionRef,
+        where("company_id", "==", user.company_id)
+      );
+
+      // Execute the query
+      const querySnapshot = await getDocs(invitationsQuery);
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach((doc) => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setInvitations(dbData);
+    } catch (error) {
+      console.error("Error fetching invitations:", error);
+      throw error;
+    }
+  };
+  const fetchDrivers = async () => {
+    try {
+      // Create a reference to the drivers collection
+      const driversQuery = query(
+        driversCollectionRef,
+        where("company_id", "==", user.company_id)
+      );
+
+      // Execute the query
+      const querySnapshot = await getDocs(driversQuery);
+
+      // Create an array to store the documents
+      const dbData = [];
+
+      // Loop through the documents and add them to the array
+      querySnapshot.forEach((doc) => {
+        dbData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      setDrivers(dbData);
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+      throw error;
+    }
+  };
   useEffect(() => {
-    console.log(drivers);
-  }, [drivers]);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        await fetchDrivers();
+        await fetchInvitations();
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
   const handleOpen = (
     driver = { id: null, name: "", email: "", phone: "" }
   ) => {
@@ -75,23 +148,30 @@ const DriverManagement = () => {
       setDrivers(drivers.map((d) => (d.id === formData.id ? formData : d)));
     } else {
       const newDriver = { ...formData, id: drivers.length + 1 };
-      setDrivers([...drivers, newDriver]);
-
       // Send invitation email via Firebase Function
       const functions = getFunctions();
       const sendDriverInvitation = httpsCallable(
         functions,
         "sendDriverInvitation"
       );
-
+      const invitationCode = generateInvitationCode();
       try {
         const result = await sendDriverInvitation({
           email: newDriver.email,
           name: newDriver.name,
+          code: invitationCode,
         });
-
         // The response data is in result.data
         console.log("Invitation email sent successfully:", result.data);
+        await addDoc(invitationCollectionRef, {
+          company_id: user.company_id,
+          createdAt: serverTimestamp(),
+          invitation_code: invitationCode,
+          recipient_name: newDriver.name,
+          recipient_email: newDriver.email,
+          status: "pending",
+        });
+        await fetchInvitations();
       } catch (error) {
         console.error("Failed to send email:");
         console.log(error);
@@ -102,6 +182,16 @@ const DriverManagement = () => {
 
   const handleDelete = (selectedDriverID) => {
     setDrivers(drivers.filter((d) => d.id !== selectedDriverID));
+  };
+  const handleCancelInvitation = async (selectedInvitationID) => {
+    try {
+      const invitationRef = doc(firestore, "invitations", selectedInvitationID);
+      await deleteDoc(invitationRef);
+      console.log("Invitation deleted successfully.");
+      await fetchInvitations();
+    } catch (e) {
+      console.error("Error deleting invitation:", e);
+    }
   };
 
   return (
@@ -135,14 +225,17 @@ const DriverManagement = () => {
           </TableHead>
           <TableBody>
             {drivers.map((driver) => (
-              <TableRow
-                key={driver.id}
-                onClick={() => navigate(`/driver/${driver.id}`)}
-              >
+              <TableRow key={driver.id}>
                 <StyledTableCell>{driver.name}</StyledTableCell>
                 <StyledTableCell>{driver.email}</StyledTableCell>
                 <StyledTableCell>{driver.phone}</StyledTableCell>
                 <StyledTableCell>
+                  <Button
+                    onClick={() => navigate(`/driver/${driver.id}`)}
+                    color="primary"
+                  >
+                    View
+                  </Button>
                   <Button onClick={() => handleOpen(driver)} color="primary">
                     Edit
                   </Button>
@@ -151,6 +244,49 @@ const DriverManagement = () => {
                     color="secondary"
                   >
                     Delete
+                  </Button>
+                </StyledTableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TableContainer component={Paper} style={{ marginTop: 20 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Name</StyledTableCell>
+              <StyledTableCell>Email</StyledTableCell>
+              <StyledTableCell>Date Sent</StyledTableCell>
+              <StyledTableCell>Status</StyledTableCell>
+              <StyledTableCell>Actions</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {invitations.map((invitation) => (
+              <TableRow key={invitation.id}>
+                <StyledTableCell>{invitation.recipient_name}</StyledTableCell>
+                <StyledTableCell>{invitation.recipient_email}</StyledTableCell>
+                <StyledTableCell>
+                  {invitation.createdAt.toDate().toLocaleString()}
+                </StyledTableCell>
+                <StyledTableCell
+                  style={{
+                    fontWeight: "lighter",
+                    fontStyle: "italic",
+                    color: "gray",
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {invitation.status}
+                </StyledTableCell>
+                <StyledTableCell>
+                  <Button
+                    onClick={() => handleCancelInvitation(invitation.id)}
+                    color="secondary"
+                  >
+                    Cancel
                   </Button>
                 </StyledTableCell>
               </TableRow>
