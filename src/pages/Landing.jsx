@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import logo from "../assets/react.svg";
+import logo from "../assets/icon-drive-buddy-white.png";
 import "./Landing.css";
 import { setPageTitle } from "../utils/utils";
 

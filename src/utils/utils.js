@@ -18,6 +18,3 @@ export const generateInvitationCode = () => {
   }
   return result;
 };
-export const convertDate = (timestampObj) => {
-  return new Date(timestampObj._seconds * 1000).toLocaleString();
-};

@@ -1,0 +1,8 @@
+.tableHeader .tableHeaderCell {
+  color: #333 !important;
+  font-weight: 700;
+  background-color: rgba(204, 204, 204, 0.5) !important;
+}
+.tableHeader {
+  border-color: rgba(204, 204, 204, 0.5) !important;
+}

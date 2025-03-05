@@ -11,8 +11,8 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import DriveEtaIcon from "@mui/icons-material/DriveEta";
 import PersonIcon from "@mui/icons-material/Person";
 import Notifications from "../components/Notifications.jsx";
-import bodybuddyLogoDesktop from "../assets/react.svg";
-import bodybuddyLogoMobile from "../assets/react.svg";
+import drivebuddyLogoDesktop from "../assets/icon-drive-buddy-white.png";
+import drivebuddyLogoMobile from "../assets/icon-drive-buddy-white.png";
 import "./MainLayout.css";
 
 // Links to display in the left Navbar
@@ -56,7 +56,7 @@ export const MainLayout = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Set logo source based on screen size
-  const logoSource = isMobile ? bodybuddyLogoMobile : bodybuddyLogoDesktop;
+  const logoSource = isMobile ? drivebuddyLogoMobile : drivebuddyLogoDesktop;
 
   // Authentication logic from Toolpad Core
   const authentication = useMemo(() => {
@@ -90,7 +90,18 @@ export const MainLayout = () => {
         }}
         session={session}
         authentication={authentication}
-        navigation={NavBar}
+        navigation={NavBar.map((item) => ({
+          ...item,
+          sx: ({ palette }) => ({
+            "&.Mui-selected": {
+              backgroundColor: "red !important", // Background color when selected
+              color: palette.common.white, // Text color when selected
+              "&:hover": {
+                backgroundColor: palette.accent.main, // Darker shade on hover
+              },
+            },
+          }),
+        }))}
         router={router}
       >
         <DashboardLayout
@@ -98,10 +109,15 @@ export const MainLayout = () => {
           slots={{ toolbarActions: Notifications }}
           sx={{ position: "relative" }}
         >
-          <Box sx={{ margin: 2, minHeight: "calc(100vh - 180px)" }}>
+          <Box
+            sx={{
+              margin: 2,
+              minHeight: "calc(100vh - 180px)",
+            }}
+          >
             <Outlet />
+            <Footer />
           </Box>
-          <Footer />
         </DashboardLayout>
       </AppProvider>
     </>

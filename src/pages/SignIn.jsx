@@ -6,7 +6,7 @@ import { useAuth } from "../utils/AuthProvider.jsx";
 import { logInWithEmailAndPassword } from "../firebase/auth.js";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import logo from "../assets/react.svg";
+import logo from "../assets/icon-drive-buddy-white.png";
 
 export const SignIn = (props) => {
   const { user } = useAuth();
