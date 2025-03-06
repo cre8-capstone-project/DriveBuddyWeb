@@ -17,7 +17,6 @@ import { useAuth } from "./utils/AuthProvider";
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
 import { CssBaseline } from "@mui/material";
-import { Landing } from "./pages/Landing";
 import AuthenticationOptions from "./pages/AuthenticationOptions";
 import { BrowserProvider } from "./BrowserProvider";
 import { Manage } from "./pages/Manage";
@@ -49,7 +48,6 @@ function ProtectedRoutes() {
     createRoutesFromElements(
       <>
         {/* No authentication required */}
-        <Route index element={<Landing title="DriveBuddy" />} />
         <Route
           path="/enter"
           element={<AuthenticationOptions title="Welcome to DriveBuddy" />}
@@ -62,7 +60,7 @@ function ProtectedRoutes() {
           path="/"
           element={user ? <MainLayout /> : <Navigate to="/signin" />}
         >
-          <Route path="/dashboard" element={<Dashboard title="Dashboard" />} />
+          <Route index path="/" element={<Dashboard title="Dashboard" />} />
           <Route path="/manage" element={<Manage title="Manage Drivers" />} />
           <Route path="/profile" element={<Profile title="Profile" />} />
           <Route path="/driver/:id" element={<DriverDetails />} />

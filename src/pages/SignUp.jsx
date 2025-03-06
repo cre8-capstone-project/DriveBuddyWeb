@@ -26,7 +26,7 @@ export const SignUp = (props) => {
   // Transition to Dashboard when user authentication is successful
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, [user, navigate]);
 
@@ -41,7 +41,7 @@ export const SignUp = (props) => {
       if (!user) {
         throw new Error("No user with those credentials");
       }
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       setError(error.message);
       console.error(error);
