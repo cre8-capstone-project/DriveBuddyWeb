@@ -30,7 +30,7 @@ export const ServerError = (props) => {
             : "Something bad happened on our servers... Try again later."}
         </Typography>
         <Box>
-          <Button variant="contained" onClick={() => navigate("/dashboard")}>
+          <Button variant="contained" onClick={() => navigate("/")}>
             Back to home
           </Button>
         </Box>

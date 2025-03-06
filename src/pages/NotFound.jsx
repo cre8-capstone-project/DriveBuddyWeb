@@ -24,7 +24,7 @@ export const NotFound = (props) => {
         <Typography variant="h1">Not Found</Typography>
         <Typography variant="body1">This page does not exist</Typography>
         <Box>
-          <Button variant="contained" onClick={() => navigate("/dashboard")}>
+          <Button variant="contained" onClick={() => navigate("/")}>
             Back to home
           </Button>
         </Box>

@@ -24,7 +24,7 @@ export const SignIn = (props) => {
 
   useEffect(() => {
     if (user) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, [user, navigate]);
 
@@ -37,7 +37,7 @@ export const SignIn = (props) => {
       if (!user) {
         throw new Error("No user with those credentials");
       }
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       setError(error.message);
       console.error("User failed to signed in: ", error);

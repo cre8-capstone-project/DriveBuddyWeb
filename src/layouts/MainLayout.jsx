@@ -62,11 +62,11 @@ export const MainLayout = () => {
   const authentication = useMemo(() => {
     return {
       signIn: () => {
-        navigate("/dashboard");
+        navigate("/");
       },
       signOut: () => {
         handleSignOut();
-        navigate("/");
+        navigate("/enter");
       },
     };
   }, []);
