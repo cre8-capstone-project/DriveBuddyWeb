@@ -5,7 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
 import { signUpWithEmailAndPassword } from "../firebase/auth.js";
 import Grid from "@mui/material/Grid2";
-import logo from "../assets/react.svg";
+import logo from "../assets/icon-drive-buddy-white.png";
 import { useAuth } from "../utils/AuthProvider";
 
 export const SignUp = (props) => {

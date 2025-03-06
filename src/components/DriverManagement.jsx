@@ -32,6 +32,7 @@ import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { useAuth } from "../utils/AuthProvider";
 import { generateInvitationCode } from "../utils/utils";
+import "./DriverManagement.css";
 
 const DriverManagement = () => {
   const { user } = useAuth();
@@ -39,8 +40,9 @@ const DriverManagement = () => {
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
+      backgroundColor: theme.palette.background.light,
+      color: theme.palette.text.gray,
+      fontWeight: "700",
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
@@ -201,6 +203,7 @@ const DriverManagement = () => {
         flexDirection: "column",
         gap: "1rem",
         width: "100%",
+        flexGrow: 1,
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "end" }}>
@@ -213,14 +216,22 @@ const DriverManagement = () => {
         </Button>
       </Box>
 
-      <TableContainer component={Paper} style={{ marginTop: 20 }}>
+      <TableContainer component={Paper} style={{ marginTop: 2 }}>
         <Table>
-          <TableHead>
+          <TableHead className="">
             <TableRow>
-              <StyledTableCell>Name</StyledTableCell>
-              <StyledTableCell>Email</StyledTableCell>
-              <StyledTableCell>Phone</StyledTableCell>
-              <StyledTableCell>Actions</StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Name
+              </StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Email
+              </StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Phone
+              </StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Actions
+              </StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -252,9 +263,9 @@ const DriverManagement = () => {
         </Table>
       </TableContainer>
 
-      <TableContainer component={Paper} style={{ marginTop: 20 }}>
+      <TableContainer component={Paper} style={{ marginTop: 2 }}>
         <Table>
-          <TableHead>
+          <TableHead className="">
             <TableRow>
               <StyledTableCell>Name</StyledTableCell>
               <StyledTableCell>Email</StyledTableCell>
@@ -269,7 +280,9 @@ const DriverManagement = () => {
                 <StyledTableCell>{invitation.recipient_name}</StyledTableCell>
                 <StyledTableCell>{invitation.recipient_email}</StyledTableCell>
                 <StyledTableCell>
-                  {invitation.createdAt.toDate().toLocaleString()}
+                  {/*invitation.createdAt
+                    ? invitation.createdAt.toDate().toLocaleString()
+                    : null*/}
                 </StyledTableCell>
                 <StyledTableCell
                   style={{
@@ -285,6 +298,7 @@ const DriverManagement = () => {
                   <Button
                     onClick={() => handleCancelInvitation(invitation.id)}
                     color="secondary"
+                    disabled={invitation.status === "accepted"}
                   >
                     Cancel
                   </Button>

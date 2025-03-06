@@ -7,12 +7,12 @@ import theme from "../theme";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { AppProvider } from "@toolpad/core/AppProvider";
 import { useAuth } from "../utils/AuthProvider.jsx";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import DriveEtaIcon from "@mui/icons-material/DriveEta";
-import PersonIcon from "@mui/icons-material/Person";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import Notifications from "../components/Notifications.jsx";
-import bodybuddyLogoDesktop from "../assets/react.svg";
-import bodybuddyLogoMobile from "../assets/react.svg";
+import drivebuddyLogoDesktop from "../assets/icon-drive-buddy-white.png";
+import drivebuddyLogoMobile from "../assets/icon-drive-buddy-white.png";
 import "./MainLayout.css";
 
 // Links to display in the left Navbar
@@ -20,17 +20,17 @@ const NavBar = [
   {
     segment: "dashboard",
     title: "Dashboard",
-    icon: <DashboardIcon />,
+    icon: <DashboardOutlinedIcon />,
   },
   {
     segment: "manage",
     title: "Manage Drivers",
-    icon: <DriveEtaIcon />,
+    icon: <PersonAddAltOutlinedIcon />,
   },
   {
     segment: "profile",
     title: "Profile",
-    icon: <PersonIcon />,
+    icon: <PersonOutlineOutlinedIcon />,
   },
 ];
 
@@ -56,7 +56,7 @@ export const MainLayout = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   // Set logo source based on screen size
-  const logoSource = isMobile ? bodybuddyLogoMobile : bodybuddyLogoDesktop;
+  const logoSource = isMobile ? drivebuddyLogoMobile : drivebuddyLogoDesktop;
 
   // Authentication logic from Toolpad Core
   const authentication = useMemo(() => {
@@ -98,10 +98,15 @@ export const MainLayout = () => {
           slots={{ toolbarActions: Notifications }}
           sx={{ position: "relative" }}
         >
-          <Box sx={{ margin: 2, minHeight: "calc(100vh - 180px)" }}>
+          <Box
+            sx={{
+              margin: 2,
+              minHeight: "calc(100vh - 180px)",
+            }}
+          >
             <Outlet />
+            <Footer />
           </Box>
-          <Footer />
         </DashboardLayout>
       </AppProvider>
     </>

@@ -26,7 +26,7 @@ const theme = createTheme({
     },
     accent: {
       //Green
-      main: "#B8E8B1",
+      main: "#00FFFF",
       contrastText: "#FFFFFF",
     },
     success: {
@@ -39,10 +39,12 @@ const theme = createTheme({
     background: {
       default: "#fafafa", // Default background color
       paper: "#fff", // Background color for paper components
-      light: "#ccc", // Light background color
+      light: "rgba(204,204,204,0.5)", // Light background color
     },
     text: {
       // Black
+      black: "#000000",
+      gray: "#333",
       primary: "#000000", // Primary text color
       secondary: "#757575", // Secondary text color
       disabled: "#9e9e9e", // Disabled text color
@@ -138,7 +140,32 @@ const theme = createTheme({
     /****************************************/
     /*           BUTTON COMPONENT           */
     /****************************************/
-
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "#E5FFFF",
+            "&:hover": {
+              backgroundColor: "#E5FFFF !important",
+            },
+            // This ensures all child elements inherit the color
+            "& .MuiListItemText-primary, & .MuiListItemIcon-root": {
+              color: "#1E3A8A !important",
+              "&:hover": {
+                color: "#1E3A8A !important",
+              },
+            },
+            // Style for the icon specifically
+            "& .MuiListItemIcon-root": {
+              color: "#1E3A8A !important",
+              "&:hover": {
+                color: "#1E3A8A !important",
+              },
+            },
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         disableElevation: false, // Disable shadow for contained buttons
@@ -240,6 +267,7 @@ const theme = createTheme({
           "&:focus": {
             outline: "none", // Remove focus outline
           },
+          backgroundColor: "rgba(255, 255, 255, 0.5)", // 50% opacity white background
         },
       },
     },

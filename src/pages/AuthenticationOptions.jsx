@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { NavLink } from "react-router-dom";
-import logo from "../assets/react.svg";
+import logo from "../assets/icon-drive-buddy-white.png";
 
 export function AuthenticationOptions(props) {
   useEffect(() => {
