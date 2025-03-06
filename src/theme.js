@@ -140,7 +140,32 @@ const theme = createTheme({
     /****************************************/
     /*           BUTTON COMPONENT           */
     /****************************************/
-
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          "&.Mui-selected": {
+            backgroundColor: "#E5FFFF",
+            "&:hover": {
+              backgroundColor: "#E5FFFF !important",
+            },
+            // This ensures all child elements inherit the color
+            "& .MuiListItemText-primary, & .MuiListItemIcon-root": {
+              color: "#1E3A8A !important",
+              "&:hover": {
+                color: "#1E3A8A !important",
+              },
+            },
+            // Style for the icon specifically
+            "& .MuiListItemIcon-root": {
+              color: "#1E3A8A !important",
+              "&:hover": {
+                color: "#1E3A8A !important",
+              },
+            },
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         disableElevation: false, // Disable shadow for contained buttons
@@ -242,6 +267,7 @@ const theme = createTheme({
           "&:focus": {
             outline: "none", // Remove focus outline
           },
+          backgroundColor: "rgba(255, 255, 255, 0.5)", // 50% opacity white background
         },
       },
     },

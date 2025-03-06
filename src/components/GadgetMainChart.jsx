@@ -34,6 +34,8 @@ import {
   Legend,
 } from "chart.js";
 
+import { OverviewNumber } from "./OverviewNumber.jsx";
+
 // Chart.js initialization
 ChartJS.register(
   CategoryScale,
@@ -433,54 +435,12 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
             Driving hours overview
           </Typography>
           <Grid container spacing={2}>
-            <Grid flex={1}>
-              <Typography
-                variant="body1"
-                className="cardNumber"
-                sx={{ fontSize: "3rem", fontWeight: "500" }}
-              >
-                0
-              </Typography>
-              <Typography
-                variant="body1"
-                className="cardLabel"
-                sx={{ fontSize: "0.8rem", fontWeight: "lighter" }}
-              >
-                hours with detection
-              </Typography>
-            </Grid>
-            <Grid flex={1}>
-              <Typography
-                variant="body1"
-                className="cardNumber"
-                sx={{ fontSize: "3rem", fontWeight: "500" }}
-              >
-                0
-              </Typography>
-              <Typography
-                variant="body1"
-                className="cardLabel"
-                sx={{ fontSize: "0.8rem", fontWeight: "lighter" }}
-              >
-                alerts received/hour
-              </Typography>
-            </Grid>
-            <Grid flex={1}>
-              <Typography
-                variant="body1"
-                className="cardNumber"
-                sx={{ fontSize: "3rem", fontWeight: "500" }}
-              >
-                0
-              </Typography>
-              <Typography
-                variant="body1"
-                className="cardLabel"
-                sx={{ fontSize: "0.8rem", fontWeight: "lighter" }}
-              >
-                most alerts received by one driver
-              </Typography>
-            </Grid>
+            <OverviewNumber number={0} label="hours with detection" />
+            <OverviewNumber number={0} label="alerts received/hour" />
+            <OverviewNumber
+              number={0}
+              label="most alerts received by one driver"
+            />
           </Grid>
         </Box>
         <Box sx={{ height: "300px", width: "100%" }}>

@@ -7,9 +7,9 @@ import theme from "../theme";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { AppProvider } from "@toolpad/core/AppProvider";
 import { useAuth } from "../utils/AuthProvider.jsx";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import DriveEtaIcon from "@mui/icons-material/DriveEta";
-import PersonIcon from "@mui/icons-material/Person";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import Notifications from "../components/Notifications.jsx";
 import drivebuddyLogoDesktop from "../assets/icon-drive-buddy-white.png";
 import drivebuddyLogoMobile from "../assets/icon-drive-buddy-white.png";
@@ -20,17 +20,17 @@ const NavBar = [
   {
     segment: "dashboard",
     title: "Dashboard",
-    icon: <DashboardIcon />,
+    icon: <DashboardOutlinedIcon />,
   },
   {
     segment: "manage",
     title: "Manage Drivers",
-    icon: <DriveEtaIcon />,
+    icon: <PersonAddAltOutlinedIcon />,
   },
   {
     segment: "profile",
     title: "Profile",
-    icon: <PersonIcon />,
+    icon: <PersonOutlineOutlinedIcon />,
   },
 ];
 
@@ -90,18 +90,7 @@ export const MainLayout = () => {
         }}
         session={session}
         authentication={authentication}
-        navigation={NavBar.map((item) => ({
-          ...item,
-          sx: ({ palette }) => ({
-            "&.Mui-selected": {
-              backgroundColor: "red !important", // Background color when selected
-              color: palette.common.white, // Text color when selected
-              "&:hover": {
-                backgroundColor: palette.accent.main, // Darker shade on hover
-              },
-            },
-          }),
-        }))}
+        navigation={NavBar}
         router={router}
       >
         <DashboardLayout
