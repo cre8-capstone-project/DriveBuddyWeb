@@ -212,6 +212,7 @@ const theme = createTheme({
           color: "#ffffff", // Text color for readability
           "&:hover": {
             backgroundColor: "#2782D3", // Dark background on hover
+            color: "#ffffff",
           },
           minWidth: "110px", // Default minimum width
         },
@@ -241,7 +242,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "& .MuiOutlinedInput-root": {
-            backgroundColor: "rgba(255, 255, 255, 0.5)", // 50% opacity white background
+            backgroundColor: "rgba(240, 240, 240, 0.76)", // 50% opacity white background
+            color: "black",
             borderRadius: 4, // Slightly rounded corners
             "& fieldset": {
               borderColor: "lightgray", // Default border color
@@ -250,7 +252,9 @@ const theme = createTheme({
               borderColor: "lightgray", // Border remains lightgray on hover
             },
             "&.Mui-focused fieldset": {
-              borderColor: "#FF118C", // Pink border when focused
+              borderColor: "#1E3A8A", // Blue border when focused
+              backgroundColor: "rgba(238, 247, 255, 0.76)",
+              color: "black",
             },
           },
         },

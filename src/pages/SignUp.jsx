@@ -77,8 +77,7 @@ export const SignUp = (props) => {
               variant="h4"
               sx={{ width: "60%", margin: "0 auto", marginBottom: 2 }}
             >
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quis,
-              corrupti?
+              Welcome!
             </Typography>
 
             <Typography component="h1" variant="h3" sx={{ marginBottom: 1 }}>
