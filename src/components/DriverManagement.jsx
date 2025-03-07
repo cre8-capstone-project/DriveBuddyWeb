@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   doc,
   where,
+  Timestamp,
 } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {
@@ -268,9 +269,14 @@ const DriverManagement = () => {
                 <StyledTableCell>{invitation.recipient_name}</StyledTableCell>
                 <StyledTableCell>{invitation.recipient_email}</StyledTableCell>
                 <StyledTableCell>
-                  {/*invitation.createdAt
-                    ? invitation.createdAt.toDate().toLocaleString()
-                    : null*/}
+                  {invitation.createdAt
+                    ? new Timestamp(
+                        invitation.createdAt._seconds,
+                        invitation.createdAt._nanoseconds
+                      )
+                        .toDate()
+                        .toLocaleDateString()
+                    : null}
                 </StyledTableCell>
                 <StyledTableCell
                   style={{
