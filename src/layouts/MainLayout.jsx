@@ -18,19 +18,9 @@ import "./MainLayout.css";
 // Links to display in the left Navbar
 const NavBar = [
   {
-    segment: "dashboard",
-    title: "Dashboard",
-    icon: <DashboardOutlinedIcon />,
-  },
-  {
     segment: "manage",
     title: "Manage Drivers",
     icon: <PersonAddAltOutlinedIcon />,
-  },
-  {
-    segment: "profile",
-    title: "Profile",
-    icon: <PersonOutlineOutlinedIcon />,
   },
 ];
 
@@ -95,7 +85,6 @@ export const MainLayout = () => {
       >
         <DashboardLayout
           disableCollapsibleSidebar
-          slots={{ toolbarActions: Notifications }}
           sx={{ position: "relative" }}
         >
           <Box

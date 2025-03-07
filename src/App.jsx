@@ -10,7 +10,6 @@ import { AuthProvider } from "./utils/AuthProvider";
 import { MainLayout } from "./layouts/MainLayout";
 import { SignIn } from "./pages/SignIn";
 import { SignUp } from "./pages/SignUp";
-import { Dashboard } from "./pages/Dashboard";
 import { NotFound } from "./pages/NotFound";
 import { ServerError } from "./pages/ServerError";
 import { useAuth } from "./utils/AuthProvider";
@@ -20,8 +19,6 @@ import { CssBaseline } from "@mui/material";
 import AuthenticationOptions from "./pages/AuthenticationOptions";
 import { BrowserProvider } from "./BrowserProvider";
 import { Manage } from "./pages/Manage";
-import { Profile } from "./pages/Profile";
-import { DriverDetails } from "./pages/DriverDetails";
 
 function App() {
   return (
@@ -60,10 +57,7 @@ function ProtectedRoutes() {
           path="/"
           element={user ? <MainLayout /> : <Navigate to="/signin" />}
         >
-          <Route index path="/" element={<Dashboard title="Dashboard" />} />
-          <Route path="/manage" element={<Manage title="Manage Drivers" />} />
-          <Route path="/profile" element={<Profile title="Profile" />} />
-          <Route path="/driver/:id" element={<DriverDetails />} />
+          <Route index path="/" element={<Manage title="Manage Drivers" />} />
         </Route>
 
         <Route path="/error" element={<ServerError title="Server Error" />} />

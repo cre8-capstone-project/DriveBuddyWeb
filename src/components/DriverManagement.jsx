@@ -26,8 +26,8 @@ import {
   DialogContent,
   DialogTitle,
   Box,
+  Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { useAuth } from "../utils/AuthProvider";
@@ -36,8 +36,6 @@ import "./DriverManagement.css";
 
 const DriverManagement = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: theme.palette.background.light,
@@ -60,7 +58,6 @@ const DriverManagement = () => {
     id: null,
     name: "",
     email: "",
-    phone: "",
   });
   const fetchInvitations = async () => {
     try {
@@ -132,9 +129,7 @@ const DriverManagement = () => {
     loadData();
   }, []);
 
-  const handleOpen = (
-    driver = { id: null, name: "", email: "", phone: "" }
-  ) => {
+  const handleOpen = (driver = { id: null, name: "", email: "" }) => {
     setFormData(driver);
     setOpen(true);
   };
@@ -182,9 +177,6 @@ const DriverManagement = () => {
     handleClose();
   };
 
-  const handleDelete = (selectedDriverID) => {
-    setDrivers(drivers.filter((d) => d.id !== selectedDriverID));
-  };
   const handleCancelInvitation = async (selectedInvitationID) => {
     try {
       const invitationRef = doc(firestore, "invitations", selectedInvitationID);
@@ -206,7 +198,24 @@ const DriverManagement = () => {
         flexGrow: 1,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "end" }}>
+      <Box
+        sx={{
+          flex: "1",
+          display: "flex",
+          justifyContent: "flex-start",
+        }}
+      >
+        <Typography variant="h2">Manage Drivers</Typography>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignContent: "end",
+          alignItems: "end",
+        }}
+      >
+        <Typography variant="h4">Drivers</Typography>
         <Button
           variant="contained"
           color="primary"
@@ -226,12 +235,6 @@ const DriverManagement = () => {
               <StyledTableCell className="tableHeaderCell">
                 Email
               </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Phone
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Actions
-              </StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -239,29 +242,14 @@ const DriverManagement = () => {
               <TableRow key={driver.id}>
                 <StyledTableCell>{driver.name}</StyledTableCell>
                 <StyledTableCell>{driver.email}</StyledTableCell>
-                <StyledTableCell>{driver.phone}</StyledTableCell>
-                <StyledTableCell>
-                  <Button
-                    onClick={() => navigate(`/driver/${driver.id}`)}
-                    color="primary"
-                  >
-                    View
-                  </Button>
-                  <Button onClick={() => handleOpen(driver)} color="primary">
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(driver.id)}
-                    color="secondary"
-                  >
-                    Delete
-                  </Button>
-                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography variant="h4">Invitations</Typography>
+      </Box>
 
       <TableContainer component={Paper} style={{ marginTop: 2 }}>
         <Table>
@@ -326,14 +314,6 @@ const DriverManagement = () => {
             label="Email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Phone"
-            name="phone"
-            value={formData.phone}
             onChange={handleChange}
           />
         </DialogContent>

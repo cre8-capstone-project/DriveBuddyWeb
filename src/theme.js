@@ -208,8 +208,8 @@ const theme = createTheme({
           },
         },
         contained: {
-          backgroundColor: "#000000", // Primary background color
-          color: "primary.contrastText", // Text color for readability
+          backgroundColor: "#1E3A8A", // Primary background color
+          color: "#ffffff", // Text color for readability
           "&:hover": {
             backgroundColor: "#2782D3", // Dark background on hover
           },
