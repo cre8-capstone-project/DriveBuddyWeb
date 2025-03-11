@@ -14,6 +14,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Avatar,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
@@ -330,7 +331,12 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
               <TableBody>
                 {drivers.map((driver) => (
                   <TableRow key={driver.id}>
-                    <StyledTableCell>{driver.name}</StyledTableCell>
+                    <StyledTableCell
+                      sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                    >
+                      <Avatar src={driver.picture_url} alt={driver.name} />
+                      <Typography>{driver.name}</Typography>
+                    </StyledTableCell>
                     <StyledTableCell sx={{ textAlign: "center" }}>
                       {driver.hoursDriving || "-"}
                     </StyledTableCell>

@@ -1,15 +1,5 @@
 import { useEffect, useState } from "react";
-import { firestore } from "../firebase/firebase";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  doc,
-  where,
-} from "firebase/firestore";
+import { serverTimestamp } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Table,
@@ -25,6 +15,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Avatar,
+  Typography,
   Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +25,12 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import { useAuth } from "../utils/AuthProvider";
 import { generateInvitationCode } from "../utils/utils";
 import "./DriverManagement.css";
+import {
+  getDriversByCompany,
+  getInvitationsByCompany,
+  addInvitation,
+  deleteInvitation,
+} from "../api/api.js";
 
 const DriverManagement = () => {
   const { user } = useAuth();
@@ -48,8 +46,6 @@ const DriverManagement = () => {
       fontSize: 14,
     },
   }));
-  const driversCollectionRef = collection(firestore, "driver");
-  const invitationCollectionRef = collection(firestore, "invitations");
   const [drivers, setDrivers] = useState([]);
   const [invitations, setInvitations] = useState([]);
 
@@ -60,31 +56,11 @@ const DriverManagement = () => {
     id: null,
     name: "",
     email: "",
-    phone: "",
   });
   const fetchInvitations = async () => {
     try {
-      // Create a reference to the drivers collection
-
-      const invitationsQuery = query(
-        invitationCollectionRef,
-        where("company_id", "==", user.company_id)
-      );
-
-      // Execute the query
-      const querySnapshot = await getDocs(invitationsQuery);
-
-      // Create an array to store the documents
-      const dbData = [];
-
-      // Loop through the documents and add them to the array
-      querySnapshot.forEach((doc) => {
-        dbData.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-      setInvitations(dbData);
+      const dbData = await getInvitationsByCompany(user.company_id);
+      if (dbData) setInvitations(dbData);
     } catch (error) {
       console.error("Error fetching invitations:", error);
       throw error;
@@ -92,26 +68,8 @@ const DriverManagement = () => {
   };
   const fetchDrivers = async () => {
     try {
-      // Create a reference to the drivers collection
-      const driversQuery = query(
-        driversCollectionRef,
-        where("company_id", "==", user.company_id)
-      );
-
-      // Execute the query
-      const querySnapshot = await getDocs(driversQuery);
-
-      // Create an array to store the documents
-      const dbData = [];
-
-      // Loop through the documents and add them to the array
-      querySnapshot.forEach((doc) => {
-        dbData.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-      setDrivers(dbData);
+      const dbData = await getDriversByCompany(user.company_id);
+      if (dbData) setDrivers(dbData);
     } catch (error) {
       console.error("Error fetching drivers:", error);
       throw error;
@@ -124,7 +82,7 @@ const DriverManagement = () => {
         await fetchDrivers();
         await fetchInvitations();
       } catch (error) {
-        console.error("Error fetching drivers:", error);
+        console.error("Error fetching drivers or invitations:", error);
       } finally {
         setLoading(false);
       }
@@ -132,9 +90,7 @@ const DriverManagement = () => {
     loadData();
   }, []);
 
-  const handleOpen = (
-    driver = { id: null, name: "", email: "", phone: "" }
-  ) => {
+  const handleOpen = (driver = { id: null, name: "", email: "" }) => {
     setFormData(driver);
     setOpen(true);
   };
@@ -165,13 +121,12 @@ const DriverManagement = () => {
         });
         // The response data is in result.data
         console.log("Invitation email sent successfully:", result.data);
-        await addDoc(invitationCollectionRef, {
+        await addInvitation({
           company_id: user.company_id,
           createdAt: serverTimestamp(),
           invitation_code: invitationCode,
           recipient_name: newDriver.name,
           recipient_email: newDriver.email,
-          status: "pending",
         });
         await fetchInvitations();
       } catch (error) {
@@ -187,8 +142,7 @@ const DriverManagement = () => {
   };
   const handleCancelInvitation = async (selectedInvitationID) => {
     try {
-      const invitationRef = doc(firestore, "invitations", selectedInvitationID);
-      await deleteDoc(invitationRef);
+      await deleteInvitation(selectedInvitationID);
       console.log("Invitation deleted successfully.");
       await fetchInvitations();
     } catch (e) {
@@ -206,7 +160,24 @@ const DriverManagement = () => {
         flexGrow: 1,
       }}
     >
-      <Box sx={{ display: "flex", justifyContent: "end" }}>
+      <Box
+        sx={{
+          flex: "1",
+          display: "flex",
+          justifyContent: "flex-start",
+        }}
+      >
+        <Typography variant="h2">Manage Drivers</Typography>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignContent: "end",
+          alignItems: "end",
+        }}
+      >
+        <Typography variant="h4">Drivers</Typography>
         <Button
           variant="contained"
           color="primary"
@@ -227,9 +198,6 @@ const DriverManagement = () => {
                 Email
               </StyledTableCell>
               <StyledTableCell className="tableHeaderCell">
-                Phone
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
                 Actions
               </StyledTableCell>
             </TableRow>
@@ -237,9 +205,13 @@ const DriverManagement = () => {
           <TableBody>
             {drivers.map((driver) => (
               <TableRow key={driver.id}>
-                <StyledTableCell>{driver.name}</StyledTableCell>
+                <StyledTableCell
+                  sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                >
+                  <Avatar src={driver.picture_url} alt={driver.name} />
+                  <Typography>{driver.name}</Typography>
+                </StyledTableCell>
                 <StyledTableCell>{driver.email}</StyledTableCell>
-                <StyledTableCell>{driver.phone}</StyledTableCell>
                 <StyledTableCell>
                   <Button
                     onClick={() => navigate(`/driver/${driver.id}`)}
@@ -263,6 +235,10 @@ const DriverManagement = () => {
         </Table>
       </TableContainer>
 
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography variant="h4">Invitations</Typography>
+      </Box>
+
       <TableContainer component={Paper} style={{ marginTop: 2 }}>
         <Table>
           <TableHead className="">
@@ -275,36 +251,42 @@ const DriverManagement = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {invitations.map((invitation) => (
-              <TableRow key={invitation.id}>
-                <StyledTableCell>{invitation.recipient_name}</StyledTableCell>
-                <StyledTableCell>{invitation.recipient_email}</StyledTableCell>
-                <StyledTableCell>
-                  {/*invitation.createdAt
+            {invitations
+              ? invitations.map((invitation) => (
+                  <TableRow key={invitation.id}>
+                    <StyledTableCell>
+                      {invitation.recipient_name}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {invitation.recipient_email}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {/*invitation.createdAt
                     ? invitation.createdAt.toDate().toLocaleString()
                     : null*/}
-                </StyledTableCell>
-                <StyledTableCell
-                  style={{
-                    fontWeight: "lighter",
-                    fontStyle: "italic",
-                    color: "gray",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {invitation.status}
-                </StyledTableCell>
-                <StyledTableCell>
-                  <Button
-                    onClick={() => handleCancelInvitation(invitation.id)}
-                    color="secondary"
-                    disabled={invitation.status === "accepted"}
-                  >
-                    Cancel
-                  </Button>
-                </StyledTableCell>
-              </TableRow>
-            ))}
+                    </StyledTableCell>
+                    <StyledTableCell
+                      style={{
+                        fontWeight: "lighter",
+                        fontStyle: "italic",
+                        color: "gray",
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {invitation.status}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Button
+                        onClick={() => handleCancelInvitation(invitation.id)}
+                        color="secondary"
+                        disabled={invitation.status === "accepted"}
+                      >
+                        Cancel
+                      </Button>
+                    </StyledTableCell>
+                  </TableRow>
+                ))
+              : ""}
           </TableBody>
         </Table>
       </TableContainer>
@@ -326,14 +308,6 @@ const DriverManagement = () => {
             label="Email"
             name="email"
             value={formData.email}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Phone"
-            name="phone"
-            value={formData.phone}
             onChange={handleChange}
           />
         </DialogContent>
