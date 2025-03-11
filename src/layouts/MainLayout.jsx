@@ -18,7 +18,7 @@ import "./MainLayout.css";
 // Links to display in the left Navbar
 const NavBar = [
   {
-    segment: "dashboard",
+    segment: "",
     title: "Dashboard",
     icon: <DashboardOutlinedIcon />,
   },
