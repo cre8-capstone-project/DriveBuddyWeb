@@ -1,6 +1,6 @@
 import { auth, firestore } from "./firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { generateUUID } from "../utils/utils";
+import { doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { createCompany, createAdmin } from "../api/api.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -11,7 +11,7 @@ let currentUser = null;
 const signUpWithEmailAndPassword = async (
   email,
   password,
-  userObj = { name: "", company: "", company_id: "" }
+  userObj = { name: "", company: "" }
 ) => {
   try {
     // Create user in Firebase Authentication
@@ -21,13 +21,12 @@ const signUpWithEmailAndPassword = async (
       password
     );
     const user = userCredential.user;
-    userObj.company_id = generateUUID();
     // Create a document in the "admins" collection
-    await setDoc(doc(firestore, "admins", user.uid), {
+    const company = await createCompany(company);
+    await createAdmin(user.id, {
       email: user.email,
       createdAt: serverTimestamp(),
-      company: userObj.company,
-      company_id: userObj.company_id,
+      company_id: company.id,
       name: userObj.name,
     });
 

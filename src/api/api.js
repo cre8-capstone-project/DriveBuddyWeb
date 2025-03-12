@@ -389,6 +389,82 @@ const deleteInvitation = async (invitationID) => {
     }
   }
 };
+
+const createCompany = async (companyName) => {
+  try {
+    const response = await axiosClient.post(`/companies`, {
+      name: companyName,
+    });
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error("Error response:", error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error("Invitation not found");
+        }
+
+        throw new Error(
+          error.response.data.error || "Error retrieving invitation"
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received:", error.request);
+        throw new Error(
+          "No response from server. Please check your connection."
+        );
+      } else {
+        // Something happened in setting up the request
+        console.error("Request setup error:", error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error("Unexpected error:", error);
+      throw new Error("An unexpected error occurred");
+    }
+  }
+};
+
+const createAdmin = async (adminID, newAdminObj) => {
+  try {
+    const response = await axiosClient.post(`/admins/${adminID}`, newAdminObj);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Handle Axios-specific errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error("Error response:", error.response.data);
+
+        // You can handle specific status codes if needed
+        if (error.response.status === 404) {
+          console.error("Admin not found");
+        }
+
+        throw new Error(error.response.data.error || "Error retrieving admin");
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received:", error.request);
+        throw new Error(
+          "No response from server. Please check your connection."
+        );
+      } else {
+        // Something happened in setting up the request
+        console.error("Request setup error:", error.message);
+        throw new Error(`Request failed: ${error.message}`);
+      }
+    } else {
+      // Handle non-Axios errors
+      console.error("Unexpected error:", error);
+      throw new Error("An unexpected error occurred");
+    }
+  }
+};
 export {
   getDriverByID,
   getDriversByCompany,
@@ -406,4 +482,6 @@ export {
   updateInvitationStatus,
   addInvitation,
   deleteInvitation,
+  createCompany,
+  createAdmin,
 };
