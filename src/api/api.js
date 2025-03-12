@@ -405,11 +405,11 @@ const createCompany = async (companyName) => {
 
         // You can handle specific status codes if needed
         if (error.response.status === 404) {
-          console.error("Invitation not found");
+          console.error("Company not found");
         }
 
         throw new Error(
-          error.response.data.error || "Error retrieving invitation"
+          error.response.data.error || "Error retrieving company"
         );
       } else if (error.request) {
         // The request was made but no response was received

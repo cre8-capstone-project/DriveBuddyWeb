@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { setPageTitle } from "../utils/utils";
@@ -16,7 +17,6 @@ export const SignUp = (props) => {
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
   const navigate = useNavigate();
-  //const location = useLocation();
 
   // Initialization
   useEffect(() => {
