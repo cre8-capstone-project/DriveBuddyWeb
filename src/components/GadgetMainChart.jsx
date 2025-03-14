@@ -82,7 +82,7 @@ const GadgetMainChart = ({ title = "" }) => {
     aspectRatio: 2,
     plugins: {
       legend: {
-        display: false,
+        display: true,
       },
       tooltip: {
         mode: "index",
@@ -123,20 +123,10 @@ const GadgetMainChart = ({ title = "" }) => {
   const [chartData, setChartData] = useState({
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
-      // For minutes
       {
-        label: "Minutes (min)",
+        label: "Alerts received/Hour",
         data: [0, 0, 0, 0, 0, 0, 0],
-        backgroundColor: "#B8E8B1",
-        borderColor: "#B8E8B1",
-        borderRadius: 5,
-        barPercentage: 1,
-      },
-      // For calories
-      {
-        label: "Calories (kcal)",
-        data: [0, 0, 0, 0, 0, 0, 0],
-        backgroundColor: "#489FE4",
+        backgroundColor: theme.palette.primary,
         borderColor: "#489FE4",
         borderRadius: 5,
         barThickness: 0,
@@ -154,16 +144,7 @@ const GadgetMainChart = ({ title = "" }) => {
   // Initialization
   useEffect(() => {
     const chartInstance = chartRef.current?.chartInstance;
-    const loadData = async () => {
-      const response = await getAverageFaceDetectionHistoryDataByWeek(
-        user.company_id,
-        new Date()
-      );
-      if (response) {
-        updateChartDataStates(response);
-      }
-    };
-    loadData();
+    handleWeeklyView();
 
     // Cleanup
     return () => {
@@ -173,7 +154,6 @@ const GadgetMainChart = ({ title = "" }) => {
     };
   }, []);
 
-  /* / Add char resize event listener
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -187,13 +167,11 @@ const GadgetMainChart = ({ title = "" }) => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  
 
   // Chart resize
   useEffect(() => {
     chartRef.current.resize();
   }, [windowWidth]);
-  */
 
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
@@ -222,8 +200,7 @@ const GadgetMainChart = ({ title = "" }) => {
 
   const handleWeeklyView = async () => {
     const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
-    const weeklyMinutesData = Array(7).fill(0);
-    const weeklyCaloriesData = Array(7).fill(0);
+    const weeklyAlertsData = Array(7).fill(0);
 
     const response = await getAverageFaceDetectionHistoryDataByWeek(
       user.company_id,
@@ -231,7 +208,7 @@ const GadgetMainChart = ({ title = "" }) => {
     );
     updateChartDataStates(response);
 
-    data.forEach((entry) => {
+    response.data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
       if (
         isWithinInterval(entryDate, {
@@ -240,25 +217,31 @@ const GadgetMainChart = ({ title = "" }) => {
         })
       ) {
         const dayOfWeek = (parseInt(format(entryDate, "i")) - 1 + 7) % 7;
-        weeklyMinutesData[dayOfWeek] += entry.minutes;
-        weeklyCaloriesData[dayOfWeek] += entry.calories;
+        weeklyAlertsData[dayOfWeek] += entry.alertPerHour;
       }
     });
-    setChartData((prevChartData) => ({
-      ...prevChartData,
+    const newChartData = {
       labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       datasets: [
-        { ...prevChartData.datasets[0], data: weeklyMinutesData }, // minutes
-        { ...prevChartData.datasets[1], data: weeklyCaloriesData }, // calories
+        {
+          label: "Alerts/Hour",
+          data: [...weeklyAlertsData], // Create a new array
+          backgroundColor: "#489FE4",
+          borderColor: "#489FE4",
+          borderRadius: 5,
+          barThickness: 5, // Non-zero value
+        },
       ],
-    }));
+    };
+
+    setChartData(newChartData);
     setOptions((prevOptions) => ({
       ...prevOptions,
       scales: {
         ...prevOptions.scales,
         y: {
           ...prevOptions.scales.y,
-          max: Math.max(...weeklyMinutesData) + 5,
+          max: parseInt(Math.max(...weeklyAlertsData) + 5),
         },
       },
     }));
@@ -267,8 +250,7 @@ const GadgetMainChart = ({ title = "" }) => {
   const handleMonthlyView = async () => {
     const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
     const daysInMonth = getDate(endOfCurrentMonth);
-    const monthlyMinutesData = Array(daysInMonth).fill(0);
-    const monthlyCaloriesData = Array(daysInMonth).fill(0);
+    const monthlyAlertsData = Array(daysInMonth).fill(0);
 
     const response = await getAverageFaceDetectionHistoryDataByMonth(
       user.company_id,
@@ -285,25 +267,31 @@ const GadgetMainChart = ({ title = "" }) => {
         })
       ) {
         const dayOfMonth = getDate(entryDate) - 1;
-        monthlyMinutesData[dayOfMonth] += entry.minutes;
-        monthlyCaloriesData[dayOfMonth] += entry.calories;
+        monthlyAlertsData[dayOfMonth] += entry.alertPerHour;
       }
     });
-    setChartData((prevChartData) => ({
-      ...prevChartData,
+    const newChartData = {
       labels: Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()),
       datasets: [
-        { ...prevChartData.datasets[0], data: monthlyMinutesData },
-        { ...prevChartData.datasets[1], data: monthlyCaloriesData },
+        {
+          label: "Alerts/Hour",
+          data: [...monthlyAlertsData], // Create a new array
+          backgroundColor: "#489FE4",
+          borderColor: "#489FE4",
+          borderRadius: 5,
+          barThickness: 5, // Non-zero value
+        },
       ],
-    }));
+    };
+
+    setChartData(newChartData);
     setOptions((prevOptions) => ({
       ...prevOptions,
       scales: {
         ...prevOptions.scales,
         y: {
           ...prevOptions.scales.y,
-          max: Math.max(...monthlyMinutesData) + 5,
+          max: parseInt(Math.max(...monthlyAlertsData) + 5),
         },
       },
     }));
@@ -311,8 +299,7 @@ const GadgetMainChart = ({ title = "" }) => {
 
   const handleYearlyView = async () => {
     const endOfCurrentYear = endOfYear(startOfCurrentYear);
-    const yearlyMinutesData = Array(12).fill(0);
-    const yearlyCaloriesData = Array(12).fill(0);
+    const yearlyAlertsData = Array(12).fill(0);
 
     const response = await getAverageFaceDetectionHistoryDataByYear(
       user.company_id,
@@ -329,12 +316,10 @@ const GadgetMainChart = ({ title = "" }) => {
         })
       ) {
         const monthOfYear = getMonth(entryDate);
-        yearlyMinutesData[monthOfYear] += entry.minutes;
-        yearlyCaloriesData[monthOfYear] += entry.calories;
+        yearlyAlertsData[monthOfYear] += entry.alertPerHour;
       }
     });
-    setChartData((prevChartData) => ({
-      ...prevChartData,
+    const newChartData = {
       labels: [
         "Jan",
         "Feb",
@@ -350,17 +335,25 @@ const GadgetMainChart = ({ title = "" }) => {
         "Dec",
       ],
       datasets: [
-        { ...prevChartData.datasets[0], data: yearlyMinutesData },
-        { ...prevChartData.datasets[1], data: yearlyCaloriesData },
+        {
+          label: "Alerts/Hour",
+          data: [...yearlyAlertsData], // Create a new array
+          backgroundColor: "#489FE4",
+          borderColor: "#489FE4",
+          borderRadius: 5,
+          barThickness: 5, // Non-zero value
+        },
       ],
-    }));
+    };
+
+    setChartData(newChartData);
     setOptions((prevOptions) => ({
       ...prevOptions,
       scales: {
         ...prevOptions.scales,
         y: {
           ...prevOptions.scales.y,
-          max: Math.max(...yearlyMinutesData) + 50,
+          max: parseInt(Math.max(...yearlyAlertsData) + 50),
         },
       },
     }));
@@ -498,7 +491,6 @@ const GadgetMainChart = ({ title = "" }) => {
             />
           </Grid>
         </Box>
-        {/*
         <Box sx={{ height: "300px", width: "100%" }}>
           {chartData && chartData.datasets && chartData.datasets[0].data ? (
             <Bar
@@ -511,19 +503,11 @@ const GadgetMainChart = ({ title = "" }) => {
             <Typography>No data available</Typography>
           )}
         </Box>
-        */}
       </Box>
     </GadgetBase>
   );
 };
 GadgetMainChart.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      date: PropTypes.string.isRequired,
-      minutes: PropTypes.number.isRequired,
-      user_id: PropTypes.string.isRequired,
-    })
-  ).isRequired,
   title: PropTypes.string,
 };
 export default GadgetMainChart;

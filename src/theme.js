@@ -12,7 +12,7 @@ const theme = createTheme({
     // BodyBuddy palette
     primary: {
       // Primary Blue
-      main: "#2D90E0", // Main primary color
+      main: "#1E3A8A", // Main primary color
       light: "#489FE4", // Lighter shade for hover/outlines (1 shade lighter)
       dark: "#2782D3", // Darker shade for hover effects (1 shade darker)
       contrastText: "#FFFFFF", // Text color for primary buttons
