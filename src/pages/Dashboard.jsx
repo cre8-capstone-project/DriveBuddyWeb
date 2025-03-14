@@ -21,11 +21,8 @@ import GadgetMainChart from "../components/GadgetMainChart.jsx";
 import GadgetDriversList from "../components/GadgetDriversList.jsx";
 
 export const Dashboard = (props) => {
-  //const { user } = useAuth();
-  const user = {};
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Remove hash from URL after Google OAuth redirect
   useEffect(() => {
@@ -101,7 +98,7 @@ export const Dashboard = (props) => {
                   </>
                 ) : (
                   <>
-                    <GadgetMainChart data={[]} title="Average driver" />
+                    <GadgetMainChart title="Average driver" />
                   </>
                 )}
               </Box>
@@ -131,7 +128,7 @@ export const Dashboard = (props) => {
                   </>
                 ) : (
                   <>
-                    <GadgetDriversList data={[]} title="Individual report" />
+                    <GadgetDriversList title="Individual report" />
                   </>
                 )}
               </Box>

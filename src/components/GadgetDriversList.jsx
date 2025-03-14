@@ -1,6 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { firestore } from "../firebase/firebase";
 import {
   Box,
   Typography,
@@ -54,11 +54,15 @@ ChartJS.register(
   Legend
 );
 import { useAuth } from "../utils/AuthProvider";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  getDriversByCompany,
+  getFaceDetectionSummaryByWeek,
+  getFaceDetectionSummaryByMonth,
+  getFaceDetectionSummaryByYear,
+} from "../api/api.js";
 
 const GadgetDriversList = ({ data = [], title = "" }) => {
   const { user } = useAuth();
-  const driversCollectionRef = collection(firestore, "driver");
   const [drivers, setDrivers] = useState([]);
   const [startingPageIndex, setStartingPageIndex] = useState(0);
   const [endingPageIndex, setEndingPageIndex] = useState(0);
@@ -85,29 +89,23 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
   }));
   const fetchDrivers = async () => {
     try {
-      // Create a reference to the drivers collection
-      const driversQuery = query(
-        driversCollectionRef,
-        where("company_id", "==", user.company_id)
+      // Fetch drivers first
+      const driversResponse = await getDriversByCompany(user.company_id);
+
+      // Set initial drivers state
+      setDrivers(driversResponse);
+      setTotalNumberOfDrivers(driversResponse.length);
+      setStartingPageIndex(1);
+      setEndingPageIndex(Math.min(11, driversResponse.length));
+
+      // Then fetch face detection data
+      const faceDetectionData = await getFaceDetectionSummaryByWeek(
+        user.company_id,
+        new Date()
       );
 
-      // Execute the query
-      const querySnapshot = await getDocs(driversQuery);
-
-      // Create an array to store the documents
-      const dbData = [];
-
-      // Loop through the documents and add them to the array
-      querySnapshot.forEach((doc) => {
-        dbData.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-      setDrivers(dbData);
-      setTotalNumberOfDrivers(dbData.length);
-      setStartingPageIndex(1);
-      setEndingPageIndex(Math.min(11, dbData.length));
+      // Update drivers with face detection data
+      updateDriversWithFaceData(driversResponse, faceDetectionData);
     } catch (error) {
       console.error("Error fetching drivers:", error);
       throw error;
@@ -136,19 +134,39 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
     } else if (mode === "year-simple") {
       handleYearlyView();
     }
-  }, [data, startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
+  }, [startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
 
   const handleModeChange = (event, newMode) => {
     if (newMode) {
       setMode(newMode);
     }
   };
+  const updateDriversWithFaceData = (driversData, faceData) => {
+    const updatedDrivers = driversData.map((driver) => {
+      const matchingData = faceData.data.find(
+        (item) => item.userId === driver.id
+      );
 
-  const handleWeeklyView = () => {
+      if (matchingData) {
+        return {
+          ...driver,
+          ...matchingData,
+        };
+      }
+      return driver;
+    });
+    setDrivers(updatedDrivers);
+  };
+
+  const handleWeeklyView = async () => {
     const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
     const weeklyMinutesData = Array(7).fill(0);
     const weeklyCaloriesData = Array(7).fill(0);
-
+    const response = await getFaceDetectionSummaryByWeek(
+      user.company_id,
+      new Date()
+    );
+    updateDriversWithFaceData(drivers, response);
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
       if (
@@ -164,12 +182,16 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
     });
   };
 
-  const handleMonthlyView = () => {
+  const handleMonthlyView = async () => {
     const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
     const daysInMonth = getDate(endOfCurrentMonth);
     const monthlyMinutesData = Array(daysInMonth).fill(0);
     const monthlyCaloriesData = Array(daysInMonth).fill(0);
-
+    const response = await getFaceDetectionSummaryByMonth(
+      user.company_id,
+      new Date()
+    );
+    updateDriversWithFaceData(drivers, response);
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
       if (
@@ -185,11 +207,15 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
     });
   };
 
-  const handleYearlyView = () => {
+  const handleYearlyView = async () => {
     const endOfCurrentYear = endOfYear(startOfCurrentYear);
     const yearlyMinutesData = Array(12).fill(0);
     const yearlyCaloriesData = Array(12).fill(0);
-
+    const response = await getFaceDetectionSummaryByYear(
+      user.company_id,
+      new Date()
+    );
+    updateDriversWithFaceData(drivers, response);
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
       if (
@@ -329,8 +355,8 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {drivers.map((driver) => (
-                  <TableRow key={driver.id}>
+                {drivers.map((driver, index) => (
+                  <TableRow key={index + 1}>
                     <StyledTableCell
                       sx={{ display: "flex", gap: 1, alignItems: "center" }}
                     >
@@ -338,10 +364,14 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
                       <Typography>{driver.name}</Typography>
                     </StyledTableCell>
                     <StyledTableCell sx={{ textAlign: "center" }}>
-                      {driver.hoursDriving || "-"}
+                      {driver.totalSessionHours
+                        ? parseInt(driver.totalSessionHours)
+                        : "-"}
                     </StyledTableCell>
                     <StyledTableCell sx={{ textAlign: "center" }}>
-                      {driver.alertsHour || "-"}
+                      {driver.alertPerHour
+                        ? parseInt(driver.alertPerHour)
+                        : "-"}
                     </StyledTableCell>
                   </TableRow>
                 ))}
