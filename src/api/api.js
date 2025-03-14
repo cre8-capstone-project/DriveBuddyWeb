@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { formatDate } from "../utils/utils";
 //const API_URL = "https://drivebuddy.wmdd4950.com/api/";
 const API_URL = "http://localhost:3000/";
 // Common setting for API requests
@@ -54,63 +54,6 @@ const getDriversByCompany = async (company_id) => {
 };
 
 /**
- * Retrieves all drivers from the database.
- * @returns An array of drivers or an empty array if an error occurs.
- */
-const getAllDrivers = async () => {
-  try {
-    const response = await axiosClient.get("/drivers");
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
-
-/**
- * Creates a new driver in the database.
- * @param driverObject - The driver data excluding the ID.
- * @returns The created driver object or undefined if an error occurs.
- */
-const createDriver = async (driverObject) => {
-  try {
-    const response = await axiosClient.post("/drivers", driverObject);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-/**
- * Updates an existing driver by ID.
- * @param driverId - The ID of the driver to update.
- * @param driverObject - The updated driver data.
- * @returns The updated driver object or undefined if an error occurs.
- */
-const updateDriver = async (driverId, driverObject) => {
-  try {
-    const response = await axiosClient.put(
-      `/drivers/${driverId}`,
-      driverObject
-    );
-    return {
-      id: response.data.id,
-      name: response.data.name,
-      email: response.data.email,
-      phone: response.data.phone,
-      user_type: response.data.user_type,
-      vehicle_type: response.data.vehicle_type,
-      birthday: response.data.birthday
-        ? new Date(response.data.birthday.seconds * 1000) // Convert Firestore Timestamp to Date
-        : null,
-      picture_url: response.data.picture_url,
-    };
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-/**
  * Deletes a driver by their ID.
  * @param driverId - The ID of the driver to delete.
  * @returns A success message or undefined if an error occurs.
@@ -123,26 +66,135 @@ const deleteDriver = async (driverId) => {
     console.error(error);
   }
 };
-
-//ToDo: Plan to do refactoring in the next sprint
-const logFaceDetectionSessionData = async (sessionData) => {
+/**
+ *
+ * @param {*} driverId
+ * @param {*} date
+ * @returns
+ */
+const getFaceDetectionSummaryByDay = async (companyId, date) => {
   try {
-    const response = await axiosClient.post(
-      "/face-detection-session/register",
-      sessionData
+    const response = await axiosClient.get(
+      `/face-detection-session/daily-summary/?companyID=${companyId}&date=${formatDate(date)}`
     );
     return response.data;
   } catch (error) {
-    console.error("Error logging face detection session:", error);
-    return null;
+    console.error(error);
+    return {};
   }
 };
-
-// ToDo: Plan to do refactoring in the next sprint
-const getFaceDetectionHistoryDataByDay = async (driverId, date) => {
+/**
+ *
+ * @param {*} driverId
+ * @param {*} date
+ * @returns
+ */
+const getFaceDetectionSummaryByWeek = async (companyId, date) => {
   try {
     const response = await axiosClient.get(
-      `/face-detection-session/daily/?userId=${driverId}&date=${date}`
+      `/face-detection-session/weekly-summary/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} driverId
+ * @param {*} date
+ * @returns
+ */
+const getFaceDetectionSummaryByMonth = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/monthly-summary/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} driverId
+ * @param {*} date
+ * @returns
+ */
+const getFaceDetectionSummaryByYear = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/yearly-summary/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} companyId
+ * @param {*} date
+ * @returns
+ */
+const getAverageFaceDetectionHistoryDataByDay = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/daily-average/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} companyId
+ * @param {*} date
+ * @returns
+ */
+const getAverageFaceDetectionHistoryDataByWeek = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/weekly-average/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} companyId
+ * @param {*} date
+ * @returns
+ */
+const getAverageFaceDetectionHistoryDataByMonth = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/monthly-average/?companyID=${companyId}&date=${formatDate(date)}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+};
+/**
+ *
+ * @param {*} companyId
+ * @param {*} date
+ * @returns
+ */
+const getAverageFaceDetectionHistoryDataByYear = async (companyId, date) => {
+  try {
+    const response = await axiosClient.get(
+      `/face-detection-session/yearly-average/?companyID=${companyId}&date=${formatDate(date)}`
     );
     return response.data;
   } catch (error) {
@@ -151,45 +203,11 @@ const getFaceDetectionHistoryDataByDay = async (driverId, date) => {
   }
 };
 
-// ToDo: Plan to do refactoring in the next sprint
-const getFaceDetectionHistoryDataByWeek = async (driverId, date) => {
-  try {
-    const response = await axiosClient.get(
-      `/face-detection-session/weekly/?userId=${driverId}&date=${date}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-};
-
-// ToDo: Plan to do refactoring in the next sprint
-const getFaceDetectionHistoryDataByMonth = async (driverId, date) => {
-  try {
-    const response = await axiosClient.get(
-      `/face-detection-session/monthly/?userId=${driverId}&date=${date}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-};
-
-// ToDo: Plan to do refactoring in the next sprint
-const getFaceDetectionHistoryDataByYear = async (driverId, date) => {
-  try {
-    const response = await axiosClient.get(
-      `/face-detection-session/yearly/?userId=${driverId}&date=${date}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    return {};
-  }
-};
-
+/**
+ *
+ * @param {*} code
+ * @returns
+ */
 const getInvitationCode = async (code) => {
   try {
     const response = await axiosClient.get(`/invitations/${code}`);
@@ -227,6 +245,11 @@ const getInvitationCode = async (code) => {
     }
   }
 };
+/**
+ *
+ * @param {*} company_id
+ * @returns
+ */
 const getInvitationsByCompany = async (company_id) => {
   try {
     const response = await axiosClient.get(
@@ -266,7 +289,11 @@ const getInvitationsByCompany = async (company_id) => {
     }
   }
 };
-
+/**
+ *
+ * @param {*} updatedInvitationObj
+ * @returns
+ */
 const updateInvitationStatus = async (updatedInvitationObj) => {
   try {
     const response = await axiosClient.put(
@@ -307,6 +334,11 @@ const updateInvitationStatus = async (updatedInvitationObj) => {
     }
   }
 };
+/**
+ *
+ * @param {*} invitationObj
+ * @returns
+ */
 const addInvitation = async (invitationObj) => {
   try {
     const newInvitationObj = {
@@ -352,6 +384,11 @@ const addInvitation = async (invitationObj) => {
     }
   }
 };
+/**
+ *
+ * @param {*} invitationID
+ * @returns
+ */
 const deleteInvitation = async (invitationID) => {
   try {
     const response = await axiosClient.delete(`/invitations/${invitationID}`);
@@ -389,7 +426,11 @@ const deleteInvitation = async (invitationID) => {
     }
   }
 };
-
+/**
+ *
+ * @param {*} companyName
+ * @returns
+ */
 const createCompany = async (companyName) => {
   try {
     const response = await axiosClient.post(`/companies`, {
@@ -429,7 +470,12 @@ const createCompany = async (companyName) => {
     }
   }
 };
-
+/**
+ *
+ * @param {*} adminID
+ * @param {*} newAdminObj
+ * @returns
+ */
 const createAdmin = async (adminID, newAdminObj) => {
   try {
     const response = await axiosClient.post(`/admins/${adminID}`, newAdminObj);
@@ -468,15 +514,15 @@ const createAdmin = async (adminID, newAdminObj) => {
 export {
   getDriverByID,
   getDriversByCompany,
-  getAllDrivers,
-  createDriver,
-  updateDriver,
   deleteDriver,
-  logFaceDetectionSessionData,
-  getFaceDetectionHistoryDataByDay,
-  getFaceDetectionHistoryDataByWeek,
-  getFaceDetectionHistoryDataByMonth,
-  getFaceDetectionHistoryDataByYear,
+  getFaceDetectionSummaryByDay,
+  getFaceDetectionSummaryByWeek,
+  getFaceDetectionSummaryByMonth,
+  getFaceDetectionSummaryByYear,
+  getAverageFaceDetectionHistoryDataByDay,
+  getAverageFaceDetectionHistoryDataByWeek,
+  getAverageFaceDetectionHistoryDataByMonth,
+  getAverageFaceDetectionHistoryDataByYear,
   getInvitationCode,
   getInvitationsByCompany,
   updateInvitationStatus,

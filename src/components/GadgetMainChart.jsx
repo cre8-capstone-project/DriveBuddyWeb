@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -46,11 +47,22 @@ ChartJS.register(
   Legend
 );
 import theme from "../theme.js";
+import {
+  getAverageFaceDetectionHistoryDataByWeek,
+  getAverageFaceDetectionHistoryDataByMonth,
+  getAverageFaceDetectionHistoryDataByYear,
+} from "../api/api.js";
+import { useAuth } from "../utils/AuthProvider.jsx";
 
-const GadgetMainChart = ({ data = [], title = "" }) => {
+const GadgetMainChart = ({ title = "" }) => {
+  const { user } = useAuth();
   const chartRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
   const [mode, setMode] = useState("week-simple");
+  const [data, setData] = useState([]);
+  const [hoursWithDetection, setHoursWithDetection] = useState(0);
+  const [alertsRate, setAlertsRate] = useState(0);
+  const [mostAlerts, setMostAlerts] = useState(0);
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -132,9 +144,26 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     ],
   });
 
+  const updateChartDataStates = (obj) => {
+    setHoursWithDetection(obj.totalSessionHours);
+    setAlertsRate(obj.alertPerHour);
+    setData(obj.data);
+    setMostAlerts(0);
+  };
+
   // Initialization
   useEffect(() => {
     const chartInstance = chartRef.current?.chartInstance;
+    const loadData = async () => {
+      const response = await getAverageFaceDetectionHistoryDataByWeek(
+        user.company_id,
+        new Date()
+      );
+      if (response) {
+        updateChartDataStates(response);
+      }
+    };
+    loadData();
 
     // Cleanup
     return () => {
@@ -144,7 +173,7 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     };
   }, []);
 
-  // Add char resize event listener
+  /* / Add char resize event listener
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -158,11 +187,13 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+  
 
   // Chart resize
   useEffect(() => {
     chartRef.current.resize();
   }, [windowWidth]);
+  */
 
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
@@ -181,7 +212,7 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     } else if (mode === "year-simple") {
       handleYearlyView();
     }
-  }, [data, startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
+  }, [startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
 
   const handleModeChange = (event, newMode) => {
     if (newMode) {
@@ -189,10 +220,16 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     }
   };
 
-  const handleWeeklyView = () => {
+  const handleWeeklyView = async () => {
     const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
     const weeklyMinutesData = Array(7).fill(0);
     const weeklyCaloriesData = Array(7).fill(0);
+
+    const response = await getAverageFaceDetectionHistoryDataByWeek(
+      user.company_id,
+      new Date()
+    );
+    updateChartDataStates(response);
 
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
@@ -227,11 +264,17 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     }));
   };
 
-  const handleMonthlyView = () => {
+  const handleMonthlyView = async () => {
     const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
     const daysInMonth = getDate(endOfCurrentMonth);
     const monthlyMinutesData = Array(daysInMonth).fill(0);
     const monthlyCaloriesData = Array(daysInMonth).fill(0);
+
+    const response = await getAverageFaceDetectionHistoryDataByMonth(
+      user.company_id,
+      new Date()
+    );
+    updateChartDataStates(response);
 
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
@@ -266,10 +309,16 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
     }));
   };
 
-  const handleYearlyView = () => {
+  const handleYearlyView = async () => {
     const endOfCurrentYear = endOfYear(startOfCurrentYear);
     const yearlyMinutesData = Array(12).fill(0);
     const yearlyCaloriesData = Array(12).fill(0);
+
+    const response = await getAverageFaceDetectionHistoryDataByYear(
+      user.company_id,
+      new Date()
+    );
+    updateChartDataStates(response);
 
     data.forEach((entry) => {
       const entryDate = parseISO(entry.date);
@@ -435,14 +484,21 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
             Driving hours overview
           </Typography>
           <Grid container spacing={2}>
-            <OverviewNumber number={0} label="hours with detection" />
-            <OverviewNumber number={0} label="alerts received/hour" />
             <OverviewNumber
-              number={0}
+              number={parseInt(hoursWithDetection)}
+              label="hours with detection"
+            />
+            <OverviewNumber
+              number={parseInt(alertsRate)}
+              label="alerts received/hour"
+            />
+            <OverviewNumber
+              number={parseInt(mostAlerts)}
               label="most alerts received by one driver"
             />
           </Grid>
         </Box>
+        {/*
         <Box sx={{ height: "300px", width: "100%" }}>
           {chartData && chartData.datasets && chartData.datasets[0].data ? (
             <Bar
@@ -455,6 +511,7 @@ const GadgetMainChart = ({ data = [], title = "" }) => {
             <Typography>No data available</Typography>
           )}
         </Box>
+        */}
       </Box>
     </GadgetBase>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, Timestamp } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Table,
@@ -261,9 +261,14 @@ const DriverManagement = () => {
                       {invitation.recipient_email}
                     </StyledTableCell>
                     <StyledTableCell>
-                      {/*invitation.createdAt
-                    ? invitation.createdAt.toDate().toLocaleString()
-                    : null*/}
+                      {invitation.createdAt
+                        ? new Timestamp(
+                            invitation.createdAt._seconds,
+                            invitation.createdAt._nanoseconds
+                          )
+                            .toDate()
+                            .toLocaleDateString()
+                        : null}
                     </StyledTableCell>
                     <StyledTableCell
                       style={{
