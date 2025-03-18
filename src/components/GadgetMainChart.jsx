@@ -1,13 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  ToggleButtonGroup,
-  ToggleButton,
-  Grid2 as Grid,
-} from "@mui/material";
+import { Box, Typography, Grid2 as Grid, Skeleton } from "@mui/material";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
 import {
@@ -53,8 +47,9 @@ import {
   getAverageFaceDetectionHistoryDataByYear,
 } from "../api/api.js";
 import { useAuth } from "../utils/AuthProvider.jsx";
+import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
 
-const GadgetMainChart = ({ title = "" }) => {
+const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
   const { user } = useAuth();
   const chartRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
@@ -63,6 +58,7 @@ const GadgetMainChart = ({ title = "" }) => {
   const [hoursWithDetection, setHoursWithDetection] = useState(0);
   const [alertsRate, setAlertsRate] = useState(0);
   const [mostAlerts, setMostAlerts] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -74,7 +70,7 @@ const GadgetMainChart = ({ title = "" }) => {
   );
   const [options, setOptions] = useState({
     font: {
-      family: "'Montserrat', 'Arial', sans-serif",
+      family: "'Figtree', 'Arial', sans-serif",
     },
     theme: theme,
     responsive: true,
@@ -126,8 +122,8 @@ const GadgetMainChart = ({ title = "" }) => {
       {
         label: "Alerts received/Hour",
         data: [0, 0, 0, 0, 0, 0, 0],
-        backgroundColor: theme.palette.primary,
-        borderColor: "#489FE4",
+        backgroundColor: theme.palette.primary.main,
+        borderColor: theme.palette.primary.main,
         borderRadius: 5,
         barThickness: 0,
       },
@@ -155,6 +151,17 @@ const GadgetMainChart = ({ title = "" }) => {
   }, []);
 
   useEffect(() => {
+    const loadData = async () => {
+      // If external data is provided, use it
+      if (externalDataSource && Object.keys(externalDataSource).length > 0) {
+        setMostAlerts(externalDataSource.mostAlertsReceivedByDriver);
+      }
+    };
+
+    loadData();
+  }, [externalDataSource]);
+
+  useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
@@ -170,7 +177,7 @@ const GadgetMainChart = ({ title = "" }) => {
 
   // Chart resize
   useEffect(() => {
-    chartRef.current.resize();
+    if (chartRef && chartRef.current) chartRef.current.resize();
   }, [windowWidth]);
 
   // When the mode is changed, reset the start date of the week or month
@@ -199,164 +206,187 @@ const GadgetMainChart = ({ title = "" }) => {
   };
 
   const handleWeeklyView = async () => {
-    const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
-    const weeklyAlertsData = Array(7).fill(0);
+    try {
+      setLoading(true);
+      const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
+      const weeklyAlertsData = Array(7).fill(0);
 
-    const response = await getAverageFaceDetectionHistoryDataByWeek(
-      user.company_id,
-      new Date()
-    );
-    updateChartDataStates(response);
+      const response = await getAverageFaceDetectionHistoryDataByWeek(
+        user.company_id,
+        startOfCurrentWeek
+      );
+      updateChartDataStates(response);
 
-    response.data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentWeek,
-          end: endOfCurrentWeek,
-        })
-      ) {
-        const dayOfWeek = (parseInt(format(entryDate, "i")) - 1 + 7) % 7;
-        weeklyAlertsData[dayOfWeek] += entry.alertPerHour;
-      }
-    });
-    const newChartData = {
-      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      datasets: [
-        {
-          label: "Alerts/Hour",
-          data: [...weeklyAlertsData], // Create a new array
-          backgroundColor: "#489FE4",
-          borderColor: "#489FE4",
-          borderRadius: 5,
-          barThickness: 5, // Non-zero value
+      response.data.forEach((entry) => {
+        const entryDate = parseISO(entry.date);
+        if (
+          isWithinInterval(entryDate, {
+            start: startOfCurrentWeek,
+            end: endOfCurrentWeek,
+          })
+        ) {
+          const dayOfWeek = (parseInt(format(entryDate, "i")) - 1 + 7) % 7;
+          weeklyAlertsData[dayOfWeek] += entry.alertPerHour;
+        }
+      });
+      const newChartData = {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+          {
+            label: "Alerts/Hour",
+            data: [...weeklyAlertsData], // Create a new array
+            backgroundColor: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            borderRadius: 5,
+            barThickness: 5, // Non-zero value
+          },
+        ],
+      };
+
+      setChartData(newChartData);
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        scales: {
+          ...prevOptions.scales,
+          y: {
+            ...prevOptions.scales.y,
+            max: parseInt(Math.max(...weeklyAlertsData) + 5),
+          },
         },
-      ],
-    };
-
-    setChartData(newChartData);
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      scales: {
-        ...prevOptions.scales,
-        y: {
-          ...prevOptions.scales.y,
-          max: parseInt(Math.max(...weeklyAlertsData) + 5),
-        },
-      },
-    }));
+      }));
+    } catch (e) {
+      console.log("Error handling weekly view: " + e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleMonthlyView = async () => {
-    const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
-    const daysInMonth = getDate(endOfCurrentMonth);
-    const monthlyAlertsData = Array(daysInMonth).fill(0);
+    try {
+      setLoading(true);
+      const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
+      const daysInMonth = getDate(endOfCurrentMonth);
+      const monthlyAlertsData = Array(daysInMonth).fill(0);
 
-    const response = await getAverageFaceDetectionHistoryDataByMonth(
-      user.company_id,
-      new Date()
-    );
-    updateChartDataStates(response);
+      const response = await getAverageFaceDetectionHistoryDataByMonth(
+        user.company_id,
+        startOfCurrentMonth
+      );
+      updateChartDataStates(response);
 
-    data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentMonth,
-          end: endOfCurrentMonth,
-        })
-      ) {
-        const dayOfMonth = getDate(entryDate) - 1;
-        monthlyAlertsData[dayOfMonth] += entry.alertPerHour;
-      }
-    });
-    const newChartData = {
-      labels: Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()),
-      datasets: [
-        {
-          label: "Alerts/Hour",
-          data: [...monthlyAlertsData], // Create a new array
-          backgroundColor: "#489FE4",
-          borderColor: "#489FE4",
-          borderRadius: 5,
-          barThickness: 5, // Non-zero value
+      data.forEach((entry) => {
+        const entryDate = parseISO(entry.date);
+        if (
+          isWithinInterval(entryDate, {
+            start: startOfCurrentMonth,
+            end: endOfCurrentMonth,
+          })
+        ) {
+          const dayOfMonth = getDate(entryDate) - 1;
+          monthlyAlertsData[dayOfMonth] += entry.alertPerHour;
+        }
+      });
+      const newChartData = {
+        labels: Array.from({ length: daysInMonth }, (_, i) =>
+          (i + 1).toString()
+        ),
+        datasets: [
+          {
+            label: "Alerts/Hour",
+            data: [...monthlyAlertsData], // Create a new array
+            backgroundColor: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            borderRadius: 5,
+            barThickness: 5, // Non-zero value
+          },
+        ],
+      };
+
+      setChartData(newChartData);
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        scales: {
+          ...prevOptions.scales,
+          y: {
+            ...prevOptions.scales.y,
+            max: parseInt(Math.max(...monthlyAlertsData) + 5),
+          },
         },
-      ],
-    };
-
-    setChartData(newChartData);
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      scales: {
-        ...prevOptions.scales,
-        y: {
-          ...prevOptions.scales.y,
-          max: parseInt(Math.max(...monthlyAlertsData) + 5),
-        },
-      },
-    }));
+      }));
+    } catch (e) {
+      console.log("Error handling monthly view: " + e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleYearlyView = async () => {
-    const endOfCurrentYear = endOfYear(startOfCurrentYear);
-    const yearlyAlertsData = Array(12).fill(0);
+    try {
+      setLoading(true);
+      const endOfCurrentYear = endOfYear(startOfCurrentYear);
+      const yearlyAlertsData = Array(12).fill(0);
 
-    const response = await getAverageFaceDetectionHistoryDataByYear(
-      user.company_id,
-      new Date()
-    );
-    updateChartDataStates(response);
+      const response = await getAverageFaceDetectionHistoryDataByYear(
+        user.company_id,
+        startOfCurrentYear
+      );
+      updateChartDataStates(response);
 
-    data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentYear,
-          end: endOfCurrentYear,
-        })
-      ) {
-        const monthOfYear = getMonth(entryDate);
-        yearlyAlertsData[monthOfYear] += entry.alertPerHour;
-      }
-    });
-    const newChartData = {
-      labels: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      datasets: [
-        {
-          label: "Alerts/Hour",
-          data: [...yearlyAlertsData], // Create a new array
-          backgroundColor: "#489FE4",
-          borderColor: "#489FE4",
-          borderRadius: 5,
-          barThickness: 5, // Non-zero value
+      data.forEach((entry) => {
+        const entryDate = parseISO(entry.date);
+        if (
+          isWithinInterval(entryDate, {
+            start: startOfCurrentYear,
+            end: endOfCurrentYear,
+          })
+        ) {
+          const monthOfYear = getMonth(entryDate);
+          yearlyAlertsData[monthOfYear] += entry.alertPerHour;
+        }
+      });
+      const newChartData = {
+        labels: [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ],
+        datasets: [
+          {
+            label: "Alerts/Hour",
+            data: [...yearlyAlertsData], // Create a new array
+            backgroundColor: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            borderRadius: 5,
+            barThickness: 5, // Non-zero value
+          },
+        ],
+      };
+
+      setChartData(newChartData);
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        scales: {
+          ...prevOptions.scales,
+          y: {
+            ...prevOptions.scales.y,
+            max: parseInt(Math.max(...yearlyAlertsData) + 50),
+          },
         },
-      ],
-    };
-
-    setChartData(newChartData);
-    setOptions((prevOptions) => ({
-      ...prevOptions,
-      scales: {
-        ...prevOptions.scales,
-        y: {
-          ...prevOptions.scales.y,
-          max: parseInt(Math.max(...yearlyAlertsData) + 50),
-        },
-      },
-    }));
+      }));
+    } catch (e) {
+      console.log("Error handling yearly view: " + e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNext = () => {
@@ -380,134 +410,109 @@ const GadgetMainChart = ({ title = "" }) => {
   };
   return (
     <GadgetBase>
-      <Box
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 2,
-        }}
-      >
-        <Grid
-          container
-          direction={"row"}
-          justifyContent={"space-between"}
-          sx={{ width: "100%" }}
-        >
-          <Typography variant="h4">{title}</Typography>
-          <ToggleButtonGroup
-            value={mode}
-            exclusive
-            onChange={handleModeChange}
-            aria-label="mode"
-            sx={{
-              "& .MuiToggleButton-root": {
-                border: "1px solid #ccc",
-                "&.Mui-selected": {
-                  borderColor: "lightgray",
-                  outline: "none",
-                  color: "#1E3A8A",
-                  backgroundColor: "white",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-              },
-            }}
-          >
-            <ToggleButton
-              value="week-simple"
-              aria-label="week"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Week
-            </ToggleButton>
-            <ToggleButton
-              value="month-simple"
-              aria-label="month"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Month
-            </ToggleButton>
-            <ToggleButton
-              value="year-simple"
-              aria-label="month"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Year
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
-        <Box width={{ md: "100%", lg: "65%" }}>
-          <WeekPicker
-            onClickNextWeek={handleNext}
-            onClickPreviousWeek={handlePrevious}
-            displayMode={mode}
-          />
-        </Box>
+      {loading ? (
+        Array(2)
+          .fill()
+          .map((_, index) => (
+            <Box key={index}>
+              <Skeleton
+                animation="wave"
+                width="100%"
+                height="300px"
+                variant="rectangular"
+              />
+            </Box>
+          ))
+      ) : (
         <Box
           sx={{
-            backgroundColor: "#E5FFFF",
-            borderRadius: "10px",
-            padding: "2rem",
-            textAlign: "left",
             width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2,
           }}
         >
-          <Typography
-            variant="h3"
-            sx={{
-              fontSize: "1rem",
-              margin: "0",
-              marginBottom: "1rem",
-              fontWeight: "500",
-            }}
+          <Grid
+            container
+            direction={"row"}
+            justifyContent={"space-between"}
+            sx={{ width: "100%" }}
           >
-            Driving hours overview
-          </Typography>
-          <Grid container spacing={2}>
-            <OverviewNumber
-              number={parseInt(hoursWithDetection)}
-              label="hours with detection"
-            />
-            <OverviewNumber
-              number={parseInt(alertsRate)}
-              label="alerts received/hour"
-            />
-            <OverviewNumber
-              number={parseInt(mostAlerts)}
-              label="most alerts received by one driver"
+            <Typography variant="h4">{title}</Typography>
+            <PeriodButtonGroup
+              mode={mode}
+              handleModeChange={handleModeChange}
             />
           </Grid>
-        </Box>
-        <Box sx={{ height: "300px", width: "100%" }}>
-          {chartData && chartData.datasets && chartData.datasets[0].data ? (
-            <Bar
-              data={chartData}
-              options={options}
-              key={windowWidth}
-              ref={chartRef}
+          <Box width={{ md: "100%", lg: "65%" }}>
+            <WeekPicker
+              onClickNextWeek={handleNext}
+              onClickPreviousWeek={handlePrevious}
+              displayMode={mode}
             />
-          ) : (
-            <Typography>No data available</Typography>
-          )}
+          </Box>
+          <Box
+            sx={{
+              backgroundColor: "#E5FFFF",
+              borderRadius: "10px",
+              padding: "1.2rem",
+              textAlign: "left",
+              width: "100%",
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{
+                fontSize: "1rem",
+                margin: "0",
+                marginBottom: "1rem",
+                fontWeight: "500",
+              }}
+            >
+              Driving hours overview
+            </Typography>
+            <Grid container spacing={1}>
+              <OverviewNumber
+                flex={1}
+                number={parseInt(hoursWithDetection)}
+                label="hours with detection"
+                info="Details here"
+              />
+              <OverviewNumber
+                flex={1}
+                number={parseInt(alertsRate)}
+                label="alerts received/hour"
+                info="Details here"
+              />
+              <OverviewNumber
+                flex={1}
+                number={parseInt(mostAlerts)}
+                label="most alerts by one driver"
+                info="Details here"
+              />
+            </Grid>
+          </Box>
+          <Box sx={{ height: "300px", width: "100%" }}>
+            {chartData && chartData.datasets && chartData.datasets[0].data ? (
+              <Bar
+                data={chartData}
+                options={options}
+                key={windowWidth}
+                ref={chartRef}
+              />
+            ) : (
+              <Typography>No data available</Typography>
+            )}
+          </Box>
         </Box>
-      </Box>
+      )}
     </GadgetBase>
   );
 };
 GadgetMainChart.propTypes = {
   title: PropTypes.string,
+  externalDataSource: PropTypes.object,
 };
 export default GadgetMainChart;

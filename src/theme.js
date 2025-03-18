@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import "./index.css";
 
 // Theme setup with palette colors and button styles
 const theme = createTheme({
@@ -84,53 +85,58 @@ const theme = createTheme({
   /****************************************/
 
   typography: {
-    fontFamily: "'Montserrat', 'Arial', sans-serif", // Default font for general text (Montserrat)
+    fontFamily: "'Figtree', 'Arial', sans-serif", // Default font for general text (Figtree)
 
-    // Headings will use Urbanist
+    // Headings will use Figtree
     h1: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "3rem",
       fontWeight: 400,
+      color: "#333333",
     },
     h2: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "2rem",
       fontWeight: 400,
+      color: "#333333",
     },
     h3: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "1.75rem",
       fontWeight: 400,
+      color: "#333333",
     },
     h4: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
-      fontSize: "1.5rem",
-      fontWeight: 400,
+      fontFamily: "'Figtree', 'Arial', sans-serif",
+      fontSize: "1.25rem",
+      fontWeight: 700,
+      color: "#333333",
     },
     h5: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "1.25rem",
       fontWeight: 400,
+      color: "#333333",
     },
     h6: {
-      fontFamily: "'Urbanist', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "1.5rem",
       fontWeight: 400,
     },
 
-    // Body text uses Montserrat
+    // Body text uses Figtree
     body1: {
-      fontFamily: "'Montserrat', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "1rem",
       fontWeight: 400,
     },
     body2: {
-      fontFamily: "'Montserrat', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "0.85rem",
       fontWeight: 400,
     },
     body3: {
-      fontFamily: "'Montserrat', 'Arial', sans-serif",
+      fontFamily: "'Figtree', 'Arial', sans-serif",
       fontSize: "0.75rem",
       fontWeight: 400,
     },
@@ -250,7 +256,7 @@ const theme = createTheme({
               borderColor: "lightgray", // Border remains lightgray on hover
             },
             "&.Mui-focused fieldset": {
-              borderColor: "#FF118C", // Pink border when focused
+              borderColor: "#1E3A8A",
             },
           },
         },
