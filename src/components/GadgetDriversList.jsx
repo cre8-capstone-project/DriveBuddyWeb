@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
-  ToggleButtonGroup,
-  ToggleButton,
   Grid2 as Grid,
   Table,
   TableBody,
@@ -15,24 +13,18 @@ import {
   TableRow,
   Paper,
   Avatar,
+  Skeleton,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
 import {
-  format,
-  parseISO,
   startOfWeek,
   startOfMonth,
   startOfYear,
-  endOfMonth,
-  endOfYear,
-  isWithinInterval,
   addDays,
   addMonths,
-  getDate,
-  getMonth,
 } from "date-fns";
 import {
   Chart as ChartJS,
@@ -60,14 +52,17 @@ import {
   getFaceDetectionSummaryByMonth,
   getFaceDetectionSummaryByYear,
 } from "../api/api.js";
+import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
 
-const GadgetDriversList = ({ data = [], title = "" }) => {
+const GadgetDriversList = ({ title = "", setExternalData }) => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [drivers, setDrivers] = useState([]);
   const [startingPageIndex, setStartingPageIndex] = useState(0);
   const [endingPageIndex, setEndingPageIndex] = useState(0);
   const [totalNumberOfDrivers, setTotalNumberOfDrivers] = useState(0);
   const [mode, setMode] = useState("week-simple");
+
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -87,13 +82,15 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
       fontSize: 14,
     },
   }));
-  const fetchDrivers = async () => {
-    try {
+
+  // Initialization
+  useEffect(() => {
+    const loadData = async () => {
       // Fetch drivers first
+      setLoading(true);
       const driversResponse = await getDriversByCompany(user.company_id);
 
       // Set initial drivers state
-      setDrivers(driversResponse);
       setTotalNumberOfDrivers(driversResponse.length);
       setStartingPageIndex(1);
       setEndingPageIndex(Math.min(11, driversResponse.length));
@@ -101,22 +98,26 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
       // Then fetch face detection data
       const faceDetectionData = await getFaceDetectionSummaryByWeek(
         user.company_id,
-        new Date()
+        startOfCurrentWeek
       );
-
+      const driversList = [];
       // Update drivers with face detection data
-      updateDriversWithFaceData(driversResponse, faceDetectionData);
-    } catch (error) {
-      console.error("Error fetching drivers:", error);
-      throw error;
-    }
-  };
-
-  // Initialization
-  useEffect(() => {
-    const loadData = async () => await fetchDrivers();
+      faceDetectionData.data.forEach((entry) => {
+        const driver = driversResponse.find((item) => item.id === entry.userId);
+        if (driver) {
+          driver.alertPerHour = entry.alertPerHour;
+          driver.totalSessionHours = entry.totalSessionHours;
+        }
+        driversList.push(driver);
+      });
+      //driversList.sort((a, b) => a.alertPerHour < b.alertPerHour);
+      console.log(driversList);
+      setDrivers(driversList);
+      setLoading(false);
+      setExternalData({ mostAlertsReceivedByDriver: 100 });
+    };
     loadData();
-  }, []);
+  }, [setExternalData]);
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
     const today = new Date();
@@ -142,93 +143,47 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
     }
   };
   const updateDriversWithFaceData = (driversData, faceData) => {
-    const updatedDrivers = driversData.map((driver) => {
-      const matchingData = faceData.data.find(
-        (item) => item.userId === driver.id
-      );
-
-      if (matchingData) {
-        return {
-          ...driver,
-          ...matchingData,
-        };
-      }
-      return driver;
-    });
-    setDrivers(updatedDrivers);
+    try {
+      setLoading(true);
+      const updatedDrivers = [];
+      faceData.data.forEach((entry) => {
+        const driver = driversData.find((item) => item.id === entry.userId);
+        if (driver) {
+          driver.alertPerHour = entry.alertPerHour;
+          driver.totalSessionHours = entry.totalSessionHours;
+        }
+        updatedDrivers.push(driver);
+      });
+      setDrivers(updatedDrivers);
+    } catch (e) {
+      console.error("Error updating drivers: " + e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleWeeklyView = async () => {
-    const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
-    const weeklyMinutesData = Array(7).fill(0);
-    const weeklyCaloriesData = Array(7).fill(0);
     const response = await getFaceDetectionSummaryByWeek(
       user.company_id,
-      new Date()
+      startOfCurrentWeek
     );
     updateDriversWithFaceData(drivers, response);
-    data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentWeek,
-          end: endOfCurrentWeek,
-        })
-      ) {
-        const dayOfWeek = (parseInt(format(entryDate, "i")) - 1 + 7) % 7;
-        weeklyMinutesData[dayOfWeek] += entry.minutes;
-        weeklyCaloriesData[dayOfWeek] += entry.calories;
-      }
-    });
   };
 
   const handleMonthlyView = async () => {
-    const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
-    const daysInMonth = getDate(endOfCurrentMonth);
-    const monthlyMinutesData = Array(daysInMonth).fill(0);
-    const monthlyCaloriesData = Array(daysInMonth).fill(0);
     const response = await getFaceDetectionSummaryByMonth(
       user.company_id,
-      new Date()
+      startOfCurrentMonth
     );
     updateDriversWithFaceData(drivers, response);
-    data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentMonth,
-          end: endOfCurrentMonth,
-        })
-      ) {
-        const dayOfMonth = getDate(entryDate) - 1;
-        monthlyMinutesData[dayOfMonth] += entry.minutes;
-        monthlyCaloriesData[dayOfMonth] += entry.calories;
-      }
-    });
   };
 
   const handleYearlyView = async () => {
-    const endOfCurrentYear = endOfYear(startOfCurrentYear);
-    const yearlyMinutesData = Array(12).fill(0);
-    const yearlyCaloriesData = Array(12).fill(0);
     const response = await getFaceDetectionSummaryByYear(
       user.company_id,
-      new Date()
+      startOfCurrentYear
     );
     updateDriversWithFaceData(drivers, response);
-    data.forEach((entry) => {
-      const entryDate = parseISO(entry.date);
-      if (
-        isWithinInterval(entryDate, {
-          start: startOfCurrentYear,
-          end: endOfCurrentYear,
-        })
-      ) {
-        const monthOfYear = getMonth(entryDate);
-        yearlyMinutesData[monthOfYear] += entry.minutes;
-        yearlyCaloriesData[monthOfYear] += entry.calories;
-      }
-    });
   };
 
   const handleNext = () => {
@@ -269,57 +224,7 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
           sx={{ width: "100%" }}
         >
           <Typography variant="h4">{title}</Typography>
-          <ToggleButtonGroup
-            value={mode}
-            exclusive
-            onChange={handleModeChange}
-            aria-label="mode"
-            sx={{
-              "& .MuiToggleButton-root": {
-                border: "1px solid #ccc",
-                "&.Mui-selected": {
-                  borderColor: "lightgray",
-                  outline: "none",
-                  color: "#1E3A8A",
-                  backgroundColor: "white",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-              },
-            }}
-          >
-            <ToggleButton
-              value="week-simple"
-              aria-label="week"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Week
-            </ToggleButton>
-            <ToggleButton
-              value="month-simple"
-              aria-label="month"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Month
-            </ToggleButton>
-            <ToggleButton
-              value="year-simple"
-              aria-label="month"
-              sx={{
-                textTransform: "capitalize",
-                padding: "4px 10px",
-              }}
-            >
-              Year
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <PeriodButtonGroup mode={mode} handleModeChange={handleModeChange} />
         </Grid>
         <Grid
           container
@@ -360,18 +265,46 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
                     <StyledTableCell
                       sx={{ display: "flex", gap: 1, alignItems: "center" }}
                     >
-                      <Avatar src={driver.picture_url} alt={driver.name} />
-                      <Typography>{driver.name}</Typography>
+                      {loading ? (
+                        <Skeleton
+                          animation="wave"
+                          variant="circular"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        <>
+                          <Avatar
+                            src={driver?.picture_url ? driver.picture_url : ""}
+                            alt={driver?.name ? driver.name : ""}
+                          />
+                          <Typography>
+                            {driver?.name ? driver.name : ""}
+                          </Typography>
+                        </>
+                      )}
                     </StyledTableCell>
                     <StyledTableCell sx={{ textAlign: "center" }}>
-                      {driver.totalSessionHours
-                        ? parseInt(driver.totalSessionHours)
-                        : "-"}
+                      {loading ? (
+                        <>
+                          <Skeleton variant="rectangular" />
+                        </>
+                      ) : driver?.totalSessionHours ? (
+                        parseInt(driver.totalSessionHours)
+                      ) : (
+                        "0"
+                      )}
                     </StyledTableCell>
                     <StyledTableCell sx={{ textAlign: "center" }}>
-                      {driver.alertPerHour
-                        ? parseInt(driver.alertPerHour)
-                        : "-"}
+                      {loading ? (
+                        <>
+                          <Skeleton variant="rectangular" />
+                        </>
+                      ) : driver?.alertPerHour ? (
+                        parseInt(driver.alertPerHour)
+                      ) : (
+                        "0"
+                      )}
                     </StyledTableCell>
                   </TableRow>
                 ))}
@@ -384,13 +317,7 @@ const GadgetDriversList = ({ data = [], title = "" }) => {
   );
 };
 GadgetDriversList.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      date: PropTypes.string.isRequired,
-      minutes: PropTypes.number.isRequired,
-      user_id: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  setExternalData: PropTypes.func,
   title: PropTypes.string,
 };
 export default GadgetDriversList;

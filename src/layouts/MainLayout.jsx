@@ -39,7 +39,6 @@ export const MainLayout = () => {
   const location = useLocation();
   const { user, handleSignOut } = useAuth();
   useEffect(() => {
-    console.log(user);
     console.log(user?.name, user?.email, user?.company);
   }, [user]);
 
@@ -94,7 +93,6 @@ export const MainLayout = () => {
         router={router}
       >
         <DashboardLayout
-          disableCollapsibleSidebar
           slots={{ toolbarActions: Notifications }}
           sx={{ position: "relative" }}
         >
