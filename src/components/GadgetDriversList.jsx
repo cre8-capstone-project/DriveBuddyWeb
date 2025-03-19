@@ -260,54 +260,74 @@ const GadgetDriversList = ({ title = "", setExternalData }) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {drivers.map((driver, index) => (
-                  <TableRow key={index + 1}>
-                    <StyledTableCell
-                      sx={{ display: "flex", gap: 1, alignItems: "center" }}
-                    >
-                      {loading ? (
-                        <Skeleton
-                          animation="wave"
-                          variant="circular"
-                          width={40}
-                          height={40}
-                        />
-                      ) : (
-                        <>
-                          <Avatar
-                            src={driver?.picture_url ? driver.picture_url : ""}
-                            alt={driver?.name ? driver.name : ""}
-                          />
-                          <Typography>
-                            {driver?.name ? driver.name : ""}
-                          </Typography>
-                        </>
-                      )}
-                    </StyledTableCell>
-                    <StyledTableCell sx={{ textAlign: "center" }}>
-                      {loading ? (
-                        <>
-                          <Skeleton variant="rectangular" />
-                        </>
-                      ) : driver?.totalSessionHours ? (
-                        parseInt(driver.totalSessionHours)
-                      ) : (
-                        "0"
-                      )}
-                    </StyledTableCell>
-                    <StyledTableCell sx={{ textAlign: "center" }}>
-                      {loading ? (
-                        <>
-                          <Skeleton variant="rectangular" />
-                        </>
-                      ) : driver?.alertPerHour ? (
-                        parseInt(driver.alertPerHour)
-                      ) : (
-                        "0"
-                      )}
-                    </StyledTableCell>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <Typography variant="body1" sx={{ textAlign: "center" }}>
+                        Loading...
+                      </Typography>
+                    </TableCell>
                   </TableRow>
-                ))}
+                ) : drivers && drivers.length > 0 ? (
+                  drivers.map((driver, index) => (
+                    <TableRow key={index + 1}>
+                      <StyledTableCell
+                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                      >
+                        {loading ? (
+                          <Skeleton
+                            animation="wave"
+                            variant="circular"
+                            width={40}
+                            height={40}
+                          />
+                        ) : (
+                          <>
+                            <Avatar
+                              src={
+                                driver?.picture_url ? driver.picture_url : ""
+                              }
+                              alt={driver?.name ? driver.name : ""}
+                            />
+                            <Typography>
+                              {driver?.name ? driver.name : ""}
+                            </Typography>
+                          </>
+                        )}
+                      </StyledTableCell>
+                      <StyledTableCell sx={{ textAlign: "center" }}>
+                        {loading ? (
+                          <>
+                            <Skeleton variant="rectangular" />
+                          </>
+                        ) : driver?.totalSessionHours ? (
+                          parseInt(driver.totalSessionHours)
+                        ) : (
+                          "0"
+                        )}
+                      </StyledTableCell>
+                      <StyledTableCell sx={{ textAlign: "center" }}>
+                        {loading ? (
+                          <>
+                            <Skeleton variant="rectangular" />
+                          </>
+                        ) : driver?.alertPerHour ? (
+                          parseInt(driver.alertPerHour)
+                        ) : (
+                          "0"
+                        )}
+                      </StyledTableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <Typography variant="body1" sx={{ textAlign: "center" }}>
+                        Could not find any drivers.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>

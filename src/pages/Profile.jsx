@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 //import { useAuth } from "../utils/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
 import { setPageTitle } from "../utils/utils";
+import { GadgetBase } from "../components/GadgetBase";
 
 export const Profile = (props) => {
   //const { user } = useAuth();
@@ -27,19 +28,24 @@ export const Profile = (props) => {
   }, []);
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        height: "100%",
-        justifyContent: "center",
-        alignContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Typography variant="h1" color="text.dark">
-        Profile content
-      </Typography>
-    </Box>
+    <GadgetBase sx={{ justifyContent: "flex-start", width: "100%" }}>
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignContent: "center",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography
+          variant="h2"
+          sx={{ fontWeight: "bold", fontSize: "1.7rem" }}
+        >
+          Company
+        </Typography>
+      </Box>
+    </GadgetBase>
   );
 };
 

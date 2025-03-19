@@ -19,35 +19,38 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { useAuth } from "../utils/AuthProvider";
-import { generateInvitationCode } from "../utils/utils";
+import { generateInvitationCode, capitalizeFirstLetter } from "../utils/utils";
 import "./DriverManagement.css";
+import { GadgetBase } from "./GadgetBase.jsx";
 import {
   getDriversByCompany,
   getInvitationsByCompany,
   addInvitation,
-  deleteInvitation,
 } from "../api/api.js";
+import theme from "../theme.js";
 
 const DriverManagement = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
       backgroundColor: theme.palette.background.light,
       color: theme.palette.text.gray,
       fontWeight: "700",
+      textAlign: "center",
+      padding: "0.8rem",
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
+      textAlign: "center",
     },
   }));
   const [drivers, setDrivers] = useState([]);
-  const [invitations, setInvitations] = useState([]);
 
   const [open, setOpen] = useState(false);
   // eslint-disable-next-line no-unused-vars
@@ -57,19 +60,47 @@ const DriverManagement = () => {
     name: "",
     email: "",
   });
-  const fetchInvitations = async () => {
+
+  const fetchDriversAndInvitations = async () => {
     try {
-      const dbData = await getInvitationsByCompany(user.company_id);
-      if (dbData) setInvitations(dbData);
-    } catch (error) {
-      console.error("Error fetching invitations:", error);
-      throw error;
-    }
-  };
-  const fetchDrivers = async () => {
-    try {
-      const dbData = await getDriversByCompany(user.company_id);
-      if (dbData) setDrivers(dbData);
+      const driversData = await getDriversByCompany(user.company_id);
+      if (!driversData)
+        throw new Error("Drivers response was empty: " + driversData);
+      const invitationsData = await getInvitationsByCompany(user.company_id);
+      if (!invitationsData) {
+        setDrivers(driversData);
+        throw new Error("Invitations response was empty: " + invitationsData);
+      }
+      const driversWithInvitations = [];
+
+      invitationsData.forEach((invitation) => {
+        let driver = driversData.find(
+          (item) => item.email == invitation.recipient_email
+        );
+        if (driver) {
+          driver.invitation = { ...invitation };
+        } else {
+          driver = {
+            birthday: null,
+            company_id: invitation.recipient_email,
+            email: invitation.recipient_email,
+            name: invitation.recipient_name,
+            picture_url: "",
+            invitation: { ...invitation },
+          };
+        }
+        driversWithInvitations.push(driver);
+      });
+      for (let i = 1; i < 10; i++) {
+        driversWithInvitations.push({
+          birthday: null,
+          company_id: "",
+          email: "test@test.com",
+          name: "test",
+          picture_url: "",
+        });
+      }
+      setDrivers(driversWithInvitations);
     } catch (error) {
       console.error("Error fetching drivers:", error);
       throw error;
@@ -79,8 +110,7 @@ const DriverManagement = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        await fetchDrivers();
-        await fetchInvitations();
+        await fetchDriversAndInvitations();
       } catch (error) {
         console.error("Error fetching drivers or invitations:", error);
       } finally {
@@ -106,7 +136,6 @@ const DriverManagement = () => {
       setDrivers(drivers.map((d) => (d.id === formData.id ? formData : d)));
     } else {
       const newDriver = { ...formData, id: drivers.length + 1 };
-      // Send invitation email via Firebase Function
       const functions = getFunctions();
       const sendDriverInvitation = httpsCallable(
         functions,
@@ -128,7 +157,7 @@ const DriverManagement = () => {
           recipient_name: newDriver.name,
           recipient_email: newDriver.email,
         });
-        await fetchInvitations();
+        await fetchDriversAndInvitations();
       } catch (error) {
         console.error("Failed to send email:");
         console.log(error);
@@ -137,47 +166,23 @@ const DriverManagement = () => {
     handleClose();
   };
 
-  const handleDelete = (selectedDriverID) => {
-    setDrivers(drivers.filter((d) => d.id !== selectedDriverID));
-  };
-  const handleCancelInvitation = async (selectedInvitationID) => {
-    try {
-      await deleteInvitation(selectedInvitationID);
-      console.log("Invitation deleted successfully.");
-      await fetchInvitations();
-    } catch (e) {
-      console.error("Error deleting invitation:", e);
-    }
-  };
-
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem",
-        width: "100%",
-        flexGrow: 1,
-      }}
-    >
+    <GadgetBase sx={{ justifyContent: "flex-start", width: "100%" }}>
       <Box
         sx={{
-          flex: "1",
+          width: "100%",
           display: "flex",
-          justifyContent: "flex-start",
-        }}
-      >
-        <Typography variant="h2">Manage Drivers</Typography>
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
+          alignContent: "center",
+          alignItems: "center",
           justifyContent: "space-between",
-          alignContent: "end",
-          alignItems: "end",
         }}
       >
-        <Typography variant="h4">Drivers</Typography>
+        <Typography
+          variant="h2"
+          sx={{ fontWeight: "bold", fontSize: "1.7rem" }}
+        >
+          Manage Drivers
+        </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -187,115 +192,111 @@ const DriverManagement = () => {
         </Button>
       </Box>
 
-      <TableContainer component={Paper} style={{ marginTop: 2 }}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        style={{ marginTop: 2, height: "100%" }}
+      >
+        <Table sx={{ height: "100%" }}>
           <TableHead className="">
             <TableRow>
               <StyledTableCell className="tableHeaderCell">
-                Name
+                Driver Name
               </StyledTableCell>
               <StyledTableCell className="tableHeaderCell">
                 Email
               </StyledTableCell>
               <StyledTableCell className="tableHeaderCell">
-                Actions
+                Status
+              </StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Date Invited
+              </StyledTableCell>
+              <StyledTableCell className="tableHeaderCell">
+                Date Joined
               </StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {drivers.map((driver) => (
-              <TableRow key={driver.id}>
-                <StyledTableCell
-                  sx={{ display: "flex", gap: 1, alignItems: "center" }}
-                >
-                  <Avatar src={driver.picture_url} alt={driver.name} />
-                  <Typography>{driver.name}</Typography>
-                </StyledTableCell>
-                <StyledTableCell>{driver.email}</StyledTableCell>
-                <StyledTableCell>
-                  <Button
-                    onClick={() => navigate(`/driver/${driver.id}`)}
-                    color="primary"
-                  >
-                    View
-                  </Button>
-                  <Button onClick={() => handleOpen(driver)} color="primary">
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(driver.id)}
-                    color="secondary"
-                  >
-                    Delete
-                  </Button>
-                </StyledTableCell>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <Typography variant="body1" sx={{ textAlign: "center" }}>
+                    Loading...
+                  </Typography>
+                </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h4">Invitations</Typography>
-      </Box>
-
-      <TableContainer component={Paper} style={{ marginTop: 2 }}>
-        <Table>
-          <TableHead className="">
-            <TableRow>
-              <StyledTableCell>Name</StyledTableCell>
-              <StyledTableCell>Email</StyledTableCell>
-              <StyledTableCell>Date Sent</StyledTableCell>
-              <StyledTableCell>Status</StyledTableCell>
-              <StyledTableCell>Actions</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invitations
-              ? invitations.map((invitation) => (
-                  <TableRow key={invitation.id}>
-                    <StyledTableCell>
-                      {invitation.recipient_name}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {invitation.recipient_email}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {invitation.createdAt
+            ) : drivers && drivers.length > 0 ? (
+              drivers.map((driver) => (
+                <TableRow key={driver.id}>
+                  <StyledTableCell
+                    sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                  >
+                    <Avatar src={driver.picture_url} alt={driver.name} />
+                    <Typography>{driver.name}</Typography>
+                  </StyledTableCell>
+                  <StyledTableCell sx={{ fontWeight: "bold" }}>
+                    {driver.email}
+                  </StyledTableCell>
+                  <StyledTableCell
+                    sx={
+                      driver.invitation?.status
+                        ? driver.invitation.status == "accepted"
+                          ? {
+                              color: theme.palette.success.main,
+                              fontWeight: "bold",
+                            }
+                          : {
+                              color: theme.palette.primary.main,
+                              fontWeight: "bold",
+                            }
+                        : {}
+                    }
+                  >
+                    {driver.invitation
+                      ? capitalizeFirstLetter(driver.invitation.status)
+                      : "N/A"}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {driver.invitation
+                      ? driver.invitation.createdAt
                         ? new Timestamp(
-                            invitation.createdAt._seconds,
-                            invitation.createdAt._nanoseconds
+                            driver.invitation.createdAt._seconds,
+                            driver.invitation.createdAt._nanoseconds
                           )
                             .toDate()
-                            .toLocaleDateString()
-                        : null}
-                    </StyledTableCell>
-                    <StyledTableCell
-                      style={{
-                        fontWeight: "lighter",
-                        fontStyle: "italic",
-                        color: "gray",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {invitation.status}
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      <Button
-                        onClick={() => handleCancelInvitation(invitation.id)}
-                        color="secondary"
-                        disabled={invitation.status === "accepted"}
-                      >
-                        Cancel
-                      </Button>
-                    </StyledTableCell>
-                  </TableRow>
-                ))
-              : ""}
+                            .toDateString()
+                        : "N/A"
+                      : "N/A"}
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {driver.invitation
+                      ? driver.invitation.acceptedAt
+                        ? new Timestamp(
+                            driver.invitation.acceptedAt._seconds,
+                            driver.invitation.acceptedAt._nanoseconds
+                          )
+                            .toDate()
+                            .toDateString()
+                        : "N/A"
+                      : "N/A"}
+                  </StyledTableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <Typography variant="h3" sx={{ textAlign: "center" }}>
+                    There are no drivers in your company.
+                  </Typography>
+                  <Typography variant="body1" sx={{ textAlign: "center" }}>
+                    Click &quot;add drivers&quot; to send an invitation
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{formData.id ? "Edit Driver" : "Add Driver"}</DialogTitle>
         <DialogContent>
@@ -323,7 +324,7 @@ const DriverManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </GadgetBase>
   );
 };
 

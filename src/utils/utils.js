@@ -12,3 +12,6 @@ export const generateInvitationCode = () => {
   }
   return result;
 };
+export const capitalizeFirstLetter = (val) => {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+};
