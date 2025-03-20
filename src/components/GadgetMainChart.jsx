@@ -410,104 +410,86 @@ const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
   };
   return (
     <GadgetBase>
-      {loading ? (
-        Array(2)
-          .fill()
-          .map((_, index) => (
-            <Box key={index}>
-              <Skeleton
-                animation="wave"
-                width="100%"
-                height="300px"
-                variant="rectangular"
-              />
-            </Box>
-          ))
-      ) : (
+      <Box
+        sx={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Grid
+          container
+          direction={"row"}
+          justifyContent={"space-between"}
+          sx={{ width: "100%" }}
+        >
+          <Typography variant="h4">{title}</Typography>
+          <PeriodButtonGroup mode={mode} handleModeChange={handleModeChange} />
+        </Grid>
+        <Box width={{ md: "100%", lg: "65%" }}>
+          <WeekPicker
+            onClickNextWeek={handleNext}
+            onClickPreviousWeek={handlePrevious}
+            displayMode={mode}
+          />
+        </Box>
         <Box
           sx={{
+            backgroundColor: "#E5FFFF",
+            borderRadius: "10px",
+            padding: "1.2rem",
+            textAlign: "left",
             width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 2,
           }}
         >
-          <Grid
-            container
-            direction={"row"}
-            justifyContent={"space-between"}
-            sx={{ width: "100%" }}
-          >
-            <Typography variant="h4">{title}</Typography>
-            <PeriodButtonGroup
-              mode={mode}
-              handleModeChange={handleModeChange}
-            />
-          </Grid>
-          <Box width={{ md: "100%", lg: "65%" }}>
-            <WeekPicker
-              onClickNextWeek={handleNext}
-              onClickPreviousWeek={handlePrevious}
-              displayMode={mode}
-            />
-          </Box>
-          <Box
+          <Typography
+            variant="h3"
             sx={{
-              backgroundColor: "#E5FFFF",
-              borderRadius: "10px",
-              padding: "1.2rem",
-              textAlign: "left",
-              width: "100%",
+              fontSize: "1rem",
+              margin: "0",
+              marginBottom: "1rem",
+              fontWeight: "500",
             }}
           >
-            <Typography
-              variant="h3"
-              sx={{
-                fontSize: "1rem",
-                margin: "0",
-                marginBottom: "1rem",
-                fontWeight: "500",
-              }}
-            >
-              Driving hours overview
-            </Typography>
-            <Grid container spacing={1}>
-              <OverviewNumber
-                flex={1}
-                number={parseInt(hoursWithDetection)}
-                label="hours with detection"
-                info="Details here"
-              />
-              <OverviewNumber
-                flex={1}
-                number={parseInt(alertsRate)}
-                label="alerts received/hour"
-                info="Details here"
-              />
-              <OverviewNumber
-                flex={1}
-                number={parseInt(mostAlerts)}
-                label="most alerts by one driver"
-                info="Details here"
-              />
-            </Grid>
-          </Box>
-          <Box sx={{ height: "300px", width: "100%" }}>
-            {chartData && chartData.datasets && chartData.datasets[0].data ? (
-              <Bar
-                data={chartData}
-                options={options}
-                key={windowWidth}
-                ref={chartRef}
-              />
-            ) : (
-              <Typography>No data available</Typography>
-            )}
-          </Box>
+            Driving hours overview
+          </Typography>
+          <Grid container spacing={1}>
+            <OverviewNumber
+              flex={1}
+              number={parseInt(hoursWithDetection)}
+              label="hours with detection"
+              info="Details here"
+            />
+            <OverviewNumber
+              flex={1}
+              number={parseInt(alertsRate)}
+              label="alerts received/hour"
+              info="Details here"
+            />
+            <OverviewNumber
+              flex={1}
+              number={parseInt(mostAlerts)}
+              label="most alerts by one driver"
+              info="Details here"
+            />
+          </Grid>
         </Box>
-      )}
+        <Box sx={{ height: "300px", width: "100%" }}>
+          {chartData && chartData.datasets && chartData.datasets[0].data ? (
+            <Bar
+              data={chartData}
+              options={options}
+              key={windowWidth}
+              ref={chartRef}
+            />
+          ) : (
+            <Typography>No data available</Typography>
+          )}
+        </Box>
+      </Box>
     </GadgetBase>
   );
 };
