@@ -91,6 +91,7 @@ const DriverManagement = () => {
         }
         driversWithInvitations.push(driver);
       });
+      /*
       for (let i = 1; i < 10; i++) {
         driversWithInvitations.push({
           birthday: null,
@@ -99,7 +100,7 @@ const DriverManagement = () => {
           name: "test",
           picture_url: "",
         });
-      }
+      }*/
       setDrivers(driversWithInvitations);
     } catch (error) {
       console.error("Error fetching drivers:", error);
@@ -196,7 +197,7 @@ const DriverManagement = () => {
         component={Paper}
         style={{ marginTop: 2, height: "100%" }}
       >
-        <Table sx={{ height: "100%" }}>
+        <Table>
           <TableHead className="">
             <TableRow>
               <StyledTableCell className="tableHeaderCell">

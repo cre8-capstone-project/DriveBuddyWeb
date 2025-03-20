@@ -526,6 +526,19 @@ const createAdmin = async (adminID, newAdminObj) => {
     }
   }
 };
+const getCompanyByID = async (company_id) => {
+  try {
+    const response = await axiosClient.get(`/companies/${company_id}`, {
+      timeout: 5000,
+    });
+    return {
+      id: response.data.id,
+      name: response.data.name,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+};
 export {
   getDriverByID,
   getDriversByCompany,
@@ -543,6 +556,7 @@ export {
   updateInvitationStatus,
   addInvitation,
   deleteInvitation,
+  getCompanyByID,
   createCompany,
   createAdmin,
 };
