@@ -1,13 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { setPageTitle } from "../utils/utils";
-import { NavLink, useNavigate } from "react-router-dom";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
 import { signUpWithEmailAndPassword } from "../firebase/auth.js";
 import Grid from "@mui/material/Grid2";
-import logo from "../assets/icon-drive-buddy-white.png";
+import logo from "../assets/DriveBuddyLogoName.svg";
 import { useAuth } from "../utils/AuthProvider";
+import "../gradientBackground.css";
 
 export const SignUp = (props) => {
   const { user } = useAuth();
@@ -17,10 +18,12 @@ export const SignUp = (props) => {
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Initialization
   useEffect(() => {
     setPageTitle(props.title);
+    applyBodyClass(location.pathname);
   }, []);
 
   // Transition to Dashboard when user authentication is successful
@@ -69,7 +72,7 @@ export const SignUp = (props) => {
           <Box sx={{ margin: "0 auto", textAlign: "center" }}>
             {/* Logo */}
             <Box sx={{ mb: 1 }}>
-              <img src={logo} alt="DriveBuddy Logo" width={60} />
+              <img src={logo} alt="DriveBuddy Logo" width={150} />
             </Box>
 
             {/* Welcome message */}

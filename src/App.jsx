@@ -37,6 +37,7 @@ function App() {
     </AuthProvider>
   );
 }
+
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
 
@@ -44,35 +45,51 @@ function ProtectedRoutes() {
     return null;
   }
 
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <>
-        {/* No authentication required */}
-        <Route
-          path="/enter"
-          element={<AuthenticationOptions title="Welcome to DriveBuddy" />}
-        />
-        <Route path="/signin" element={<SignIn title="Sign In" />} />
-        <Route path="/signup" element={<SignUp title="Sign Up" />} />
+  return (
+    <>
+      <RouterProvider
+        router={createBrowserRouter(
+          createRoutesFromElements(
+            <>
+              {/* No authentication required */}
+              <Route
+                path="/enter"
+                element={
+                  <AuthenticationOptions title="Welcome to DriveBuddy" />
+                }
+              />
+              <Route path="/signin" element={<SignIn title="Sign In" />} />
+              <Route path="/signup" element={<SignUp title="Sign Up" />} />
 
-        {/* Authentication required (MainLayout is applied) */}
-        <Route
-          path="/"
-          element={user ? <MainLayout /> : <Navigate to="/signin" />}
-        >
-          <Route index path="/" element={<Dashboard title="Dashboard" />} />
-          <Route path="/manage" element={<Manage title="Manage Drivers" />} />
-          <Route path="/profile" element={<Profile title="Profile" />} />
-          <Route path="/driver/:id" element={<DriverDetails />} />
-        </Route>
+              {/* Authentication required */}
+              <Route
+                path="/"
+                element={user ? <MainLayout /> : <Navigate to="/signin" />}
+              >
+                <Route
+                  index
+                  path="/"
+                  element={<Dashboard title="Dashboard" />}
+                />
+                <Route
+                  path="/manage"
+                  element={<Manage title="Manage Drivers" />}
+                />
+                <Route path="/profile" element={<Profile title="Profile" />} />
+                <Route path="/driver/:id" element={<DriverDetails />} />
+              </Route>
 
-        <Route path="/error" element={<ServerError title="Server Error" />} />
-        <Route path="*" element={<NotFound title="Not found" />} />
-      </>
-    )
+              <Route
+                path="/error"
+                element={<ServerError title="Server Error" />}
+              />
+              <Route path="*" element={<NotFound title="Not Found" />} />
+            </>
+          )
+        )}
+      />
+    </>
   );
-
-  return <RouterProvider router={router} />;
 }
 
 export default App;

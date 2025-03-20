@@ -6,8 +6,10 @@ import { useNavigate } from "react-router-dom";
 // Common Components
 //import { useAuth } from "../utils/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
-import { setPageTitle } from "../utils/utils";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
+import { useLocation } from "react-router-dom";
 import DriverManagement from "../components/DriverManagement";
+import "../whiteBackground.css";
 
 export const Manage = (props) => {
   //const { user } = useAuth();
@@ -22,8 +24,10 @@ export const Manage = (props) => {
   }, [navigate]);
 
   // Initialization
+  const location = useLocation();
   useEffect(() => {
     setPageTitle(props.title);
+    applyBodyClass(location.pathname);
   }, []);
 
   return (

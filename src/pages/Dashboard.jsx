@@ -4,9 +4,11 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid2 as Grid, Skeleton } from "@mui/material";
-import { setPageTitle } from "../utils/utils";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
+import { useLocation } from "react-router-dom";
 import GadgetMainChart from "../components/GadgetMainChart.jsx";
 import GadgetDriversList from "../components/GadgetDriversList.jsx";
+import "../whiteBackground.css";
 
 export const Dashboard = (props) => {
   const [mostAlertsReceivedByDriver, setMostAlertsReceivedByDriver] = useState(
@@ -21,9 +23,11 @@ export const Dashboard = (props) => {
     }
   }, [navigate]);
 
+  const location = useLocation();
   useEffect(() => {
     setPageTitle(props.title);
-  }, [props.title]);
+    applyBodyClass(location.pathname);
+  }, []);
 
   return (
     <Box

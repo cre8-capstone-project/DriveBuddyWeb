@@ -6,8 +6,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 // Common Components
 //import { useAuth } from "../utils/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Container } from "@mui/material";
-import { setPageTitle } from "../utils/utils";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
 import { GadgetBase } from "../components/GadgetBase";
+import "../whiteBackground.css";
 
 export const Profile = (props) => {
   //const { user } = useAuth();
@@ -25,6 +26,7 @@ export const Profile = (props) => {
   // Initialization
   useEffect(() => {
     setPageTitle(props.title);
+    applyBodyClass(location.pathname);
   }, []);
 
   return (
