@@ -18,15 +18,10 @@ axiosClient.interceptors.request.use(
       try {
         const token = await currentUser.getIdToken(true);
         config.headers["Authorization"] = `Bearer ${token}`;
-        console.log(
-          "Authorization header set:",
-          config.headers["Authorization"]
-        );
       } catch (err) {
         console.error("Failed to get token:", err);
       }
     }
-    console.log("User not signed in. Not sending JWT");
     return config;
   },
   (error) => Promise.reject(error)

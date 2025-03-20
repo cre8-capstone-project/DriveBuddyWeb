@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useState, useMemo, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -10,7 +11,7 @@ import { useAuth } from "../utils/AuthProvider.jsx";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import Notifications from "../components/Notifications.jsx";
+//import Notifications from "../components/Notifications.jsx";
 import drivebuddyLogoDesktop from "../assets/icon-drive-buddy-white.png";
 import drivebuddyLogoMobile from "../assets/icon-drive-buddy-white.png";
 import "./MainLayout.css";
@@ -93,7 +94,7 @@ export const MainLayout = () => {
         router={router}
       >
         <DashboardLayout
-          slots={{ toolbarActions: Notifications }}
+          disableCollapsibleSidebar
           sx={{ position: "relative" }}
         >
           <Box

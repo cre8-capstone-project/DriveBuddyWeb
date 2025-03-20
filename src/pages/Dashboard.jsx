@@ -39,20 +39,14 @@ export const Dashboard = (props) => {
         {/* LEFT COLUMN */}
         <Grid xs={12} md={8}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <GadgetMainChart
-              externalDataSource={mostAlertsReceivedByDriver}
-              title="Average driver"
-            />
+            <GadgetMainChart title="Average driver" />
           </Box>
         </Grid>
 
         {/* RIGHT COLUMN */}
         <Grid xs={12} md={4} flexGrow={1}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <GadgetDriversList
-              title="Individual report"
-              setExternalData={setMostAlertsReceivedByDriver}
-            />
+            <GadgetDriversList title="Individual report" />
           </Box>
         </Grid>
       </Grid>

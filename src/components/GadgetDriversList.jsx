@@ -19,6 +19,7 @@ import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   startOfWeek,
   startOfMonth,
@@ -54,7 +55,7 @@ import {
 } from "../api/api.js";
 import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
 
-const GadgetDriversList = ({ title = "", setExternalData }) => {
+const GadgetDriversList = ({ title = "" }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [drivers, setDrivers] = useState([]);
@@ -114,10 +115,9 @@ const GadgetDriversList = ({ title = "", setExternalData }) => {
       console.log(driversList);
       setDrivers(driversList);
       setLoading(false);
-      setExternalData({ mostAlertsReceivedByDriver: 100 });
     };
     loadData();
-  }, [setExternalData]);
+  }, []);
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
     const today = new Date();
@@ -232,8 +232,15 @@ const GadgetDriversList = ({ title = "", setExternalData }) => {
           width={"100%"}
           paddingY={"1rem"}
         >
-          <Grid>
-            <Typography>
+          <Grid
+            container
+            direction={"row"}
+            wrap="no-wrap"
+            gap={1}
+            alignItems={"center"}
+          >
+            <VisibilityIcon />
+            <Typography variant="body2">
               {startingPageIndex} - {endingPageIndex} of {totalNumberOfDrivers}
             </Typography>
           </Grid>
