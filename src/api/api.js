@@ -1,5 +1,6 @@
 import axios from "axios";
 import { formatDate } from "../utils/utils";
+import { getAuth } from "firebase/auth";
 //const API_URL = "https://drivebuddy.wmdd4950.com/api/";
 const API_URL = "http://localhost:3000/";
 // Common setting for API requests
@@ -10,7 +11,26 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-
+axiosClient.interceptors.request.use(
+  async (config) => {
+    const { currentUser } = getAuth();
+    if (currentUser) {
+      try {
+        const token = await currentUser.getIdToken(true);
+        config.headers["Authorization"] = `Bearer ${token}`;
+        console.log(
+          "Authorization header set:",
+          config.headers["Authorization"]
+        );
+      } catch (err) {
+        console.error("Failed to get token:", err);
+      }
+    }
+    console.log("User not signed in. Not sending JWT");
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 /**
  * Retrieves a driver by their ID.
  * @param id - The ID of the driver.
