@@ -1,5 +1,6 @@
 import axios from "axios";
 import { formatDate } from "../utils/utils";
+import { getAuth } from "firebase/auth";
 //const API_URL = "https://drivebuddy.wmdd4950.com/api/";
 const API_URL = "http://localhost:3000/";
 // Common setting for API requests
@@ -10,7 +11,21 @@ const axiosClient = axios.create({
     "Content-Type": "application/json",
   },
 });
-
+axiosClient.interceptors.request.use(
+  async (config) => {
+    const { currentUser } = getAuth();
+    if (currentUser) {
+      try {
+        const token = await currentUser.getIdToken(true);
+        config.headers["Authorization"] = `Bearer ${token}`;
+      } catch (err) {
+        console.error("Failed to get token:", err);
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 /**
  * Retrieves a driver by their ID.
  * @param id - The ID of the driver.
@@ -511,6 +526,19 @@ const createAdmin = async (adminID, newAdminObj) => {
     }
   }
 };
+const getCompanyByID = async (company_id) => {
+  try {
+    const response = await axiosClient.get(`/companies/${company_id}`, {
+      timeout: 5000,
+    });
+    return {
+      id: response.data.id,
+      name: response.data.name,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+};
 export {
   getDriverByID,
   getDriversByCompany,
@@ -528,6 +556,7 @@ export {
   updateInvitationStatus,
   addInvitation,
   deleteInvitation,
+  getCompanyByID,
   createCompany,
   createAdmin,
 };

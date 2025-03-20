@@ -32,7 +32,7 @@ const theme = createTheme({
     },
     success: {
       // Accent Green
-      main: "#64CC54", // Main accent color
+      main: "#2E7D32", // Main accent color
       light: "#6BCE5B", // Lighter shade for hover/outlines (1 shade lighter)
       dark: "#3CB534", // Darker shade for hover effects (1 shade darker)
       contrastText: "#FFFFFF", // Text color for accent buttons
@@ -178,7 +178,7 @@ const theme = createTheme({
       },
       styleOverrides: {
         root: {
-          borderRadius: 10, // Default border-radius
+          borderRadius: 50, // Default border-radius
           textTransform: "none", // Prevent uppercase text
           minHeight: "42px", // Default minimum height
           paddingLeft: "20px", // Default padding left
@@ -191,7 +191,7 @@ const theme = createTheme({
           },
 
           "&.containedWhite": {
-            backgroundColor: "#FFFFFF", // Primary background color
+            backgroundColor: "#1E3A8A", // Primary background color
             color: "rgba(0, 0, 0, 0.5)", // Text color for readability
             boxShadow:
               "0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)",
@@ -214,7 +214,7 @@ const theme = createTheme({
           },
         },
         contained: {
-          backgroundColor: "#000000", // Primary background color
+          backgroundColor: "#1E3A8A", // Primary background color
           color: "primary.contrastText", // Text color for readability
           "&:hover": {
             backgroundColor: "#2782D3", // Dark background on hover

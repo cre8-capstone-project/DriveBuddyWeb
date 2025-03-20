@@ -49,7 +49,7 @@ import {
 import { useAuth } from "../utils/AuthProvider.jsx";
 import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
 
-const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
+const GadgetMainChart = ({ title = "" }) => {
   const { user } = useAuth();
   const chartRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
@@ -131,10 +131,11 @@ const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
   });
 
   const updateChartDataStates = (obj) => {
+    console.log(obj);
     setHoursWithDetection(obj.totalSessionHours);
     setAlertsRate(obj.alertPerHour);
+    setMostAlerts(obj.maxAlertsPerUser);
     setData(obj.data);
-    setMostAlerts(0);
   };
 
   // Initialization
@@ -149,17 +150,6 @@ const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
       }
     };
   }, []);
-
-  useEffect(() => {
-    const loadData = async () => {
-      // If external data is provided, use it
-      if (externalDataSource && Object.keys(externalDataSource).length > 0) {
-        setMostAlerts(externalDataSource.mostAlertsReceivedByDriver);
-      }
-    };
-
-    loadData();
-  }, [externalDataSource]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -495,6 +485,5 @@ const GadgetMainChart = ({ title = "", externalDataSource = {} }) => {
 };
 GadgetMainChart.propTypes = {
   title: PropTypes.string,
-  externalDataSource: PropTypes.object,
 };
 export default GadgetMainChart;

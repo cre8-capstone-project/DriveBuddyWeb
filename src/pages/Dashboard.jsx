@@ -4,9 +4,11 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid2 as Grid, Skeleton } from "@mui/material";
-import { setPageTitle } from "../utils/utils";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
+import { useLocation } from "react-router-dom";
 import GadgetMainChart from "../components/GadgetMainChart.jsx";
 import GadgetDriversList from "../components/GadgetDriversList.jsx";
+import "../whiteBackground.css";
 
 export const Dashboard = (props) => {
   const [mostAlertsReceivedByDriver, setMostAlertsReceivedByDriver] = useState(
@@ -21,9 +23,11 @@ export const Dashboard = (props) => {
     }
   }, [navigate]);
 
+  const location = useLocation();
   useEffect(() => {
     setPageTitle(props.title);
-  }, [props.title]);
+    applyBodyClass(location.pathname);
+  }, []);
 
   return (
     <Box
@@ -39,20 +43,14 @@ export const Dashboard = (props) => {
         {/* LEFT COLUMN */}
         <Grid xs={12} md={8}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <GadgetMainChart
-              externalDataSource={mostAlertsReceivedByDriver}
-              title="Average driver"
-            />
+            <GadgetMainChart title="Average driver" />
           </Box>
         </Grid>
 
         {/* RIGHT COLUMN */}
         <Grid xs={12} md={4} flexGrow={1}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <GadgetDriversList
-              title="Individual report"
-              setExternalData={setMostAlertsReceivedByDriver}
-            />
+            <GadgetDriversList title="Individual report" />
           </Box>
         </Grid>
       </Grid>

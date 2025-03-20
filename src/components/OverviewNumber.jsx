@@ -2,10 +2,11 @@ import { Grid2 as Grid, Typography, Tooltip } from "@mui/material";
 import PropTypes from "prop-types";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
-export const OverviewNumber = (
-  { label = "label", number = 0 },
-  info = "title"
-) => {
+export const OverviewNumber = ({
+  label = "label",
+  number = 0,
+  info = "title",
+}) => {
   return (
     <Grid flex={1}>
       <Typography variant="body1" sx={{ fontSize: "2rem", fontWeight: "500" }}>

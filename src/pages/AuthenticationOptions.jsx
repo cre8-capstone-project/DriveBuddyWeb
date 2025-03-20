@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect } from "react";
-import { setPageTitle } from "../utils/utils";
+import { setPageTitle, applyBodyClass } from "../utils/utils";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Button,
@@ -10,11 +11,14 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { NavLink } from "react-router-dom";
-import logo from "../assets/icon-drive-buddy-white.png";
+import logo from "../assets/DriveBuddyLogoName.svg";
+import "../gradientBackground.css";
 
 export function AuthenticationOptions(props) {
+  const location = useLocation();
   useEffect(() => {
     setPageTitle(props.title);
+    applyBodyClass(location.pathname);
   }, []);
 
   // Use useMediaQuery to define screen width
@@ -40,7 +44,7 @@ export function AuthenticationOptions(props) {
         >
           {/* Logo */}
           <Box sx={{ marginBottom: 1 }}>
-            <img src={logo} alt="DriveBuddy Logo" width={60} />
+            <img src={logo} alt="DriveBuddy Logo" width={150} />
           </Box>
 
           {/* Welcome message */}
