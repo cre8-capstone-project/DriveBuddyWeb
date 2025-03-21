@@ -359,9 +359,9 @@ const addInvitation = async (invitationObj) => {
     const newInvitationObj = {
       company_id: invitationObj.company_id,
       createdAt: invitationObj.createdAt,
-      invitation_code: invitationObj.invitationCode,
-      recipient_name: invitationObj.name,
-      recipient_email: invitationObj.email,
+      invitation_code: invitationObj.invitation_code,
+      recipient_name: invitationObj.recipient_name,
+      recipient_email: invitationObj.recipient_email,
       status: "pending",
     };
     const response = await axiosClient.post(`/invitations/`, newInvitationObj);
