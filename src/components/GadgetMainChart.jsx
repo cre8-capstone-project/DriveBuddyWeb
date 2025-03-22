@@ -54,7 +54,7 @@ const GadgetMainChart = ({ title = "" }) => {
   const chartRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
   const [mode, setMode] = useState("week-simple");
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
   const [hoursWithDetection, setHoursWithDetection] = useState(0);
   const [alertsRate, setAlertsRate] = useState(0);
   const [mostAlerts, setMostAlerts] = useState(0);
@@ -131,14 +131,14 @@ const GadgetMainChart = ({ title = "" }) => {
   });
 
   const updateChartDataStates = (obj) => {
-    console.log(obj);
+    // console.log(obj);
     const totalSessionHours = parseInt(obj.totalSessionHours);
     const alertPerHour = parseInt(obj.alertPerHour);
     const maxAlertsPerUser = parseInt(obj.maxAlertsPerUser);
     setHoursWithDetection(isNaN(totalSessionHours) ? 0 : totalSessionHours);
     setAlertsRate(isNaN(alertPerHour) ? 0 : alertPerHour);
     setMostAlerts(isNaN(maxAlertsPerUser) ? 0 : maxAlertsPerUser);
-    setData(obj.data);
+    // setData(obj.data);
   };
 
   // Initialization
@@ -267,7 +267,7 @@ const GadgetMainChart = ({ title = "" }) => {
       );
       updateChartDataStates(response);
 
-      data.forEach((entry) => {
+      response.data.forEach((entry) => {
         const entryDate = parseISO(entry.date);
         if (
           isWithinInterval(entryDate, {
@@ -325,7 +325,7 @@ const GadgetMainChart = ({ title = "" }) => {
       );
       updateChartDataStates(response);
 
-      data.forEach((entry) => {
+      response.data.forEach((entry) => {
         const entryDate = parseISO(entry.date);
         if (
           isWithinInterval(entryDate, {
@@ -371,7 +371,7 @@ const GadgetMainChart = ({ title = "" }) => {
           ...prevOptions.scales,
           y: {
             ...prevOptions.scales.y,
-            max: parseInt(Math.max(...yearlyAlertsData) + 50),
+            max: parseInt(Math.max(...yearlyAlertsData) + 5),
           },
         },
       }));
