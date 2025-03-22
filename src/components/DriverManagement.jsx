@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { serverTimestamp, Timestamp } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import {
   Table,
@@ -138,11 +138,13 @@ const DriverManagement = () => {
       setDrivers(drivers.map((d) => (d.id === formData.id ? formData : d)));
     } else {
       const newDriver = { ...formData, id: drivers.length + 1 };
+
       const functions = getFunctions();
       const sendDriverInvitation = httpsCallable(
         functions,
         "sendDriverInvitation"
       );
+
       const invitationCode = generateInvitationCode();
       try {
         const result = await sendDriverInvitation({
@@ -154,7 +156,7 @@ const DriverManagement = () => {
         console.log("Invitation email sent successfully:", result.data);
         await addInvitation({
           company_id: user.company_id,
-          createdAt: serverTimestamp(),
+          createdAt: Timestamp.fromDate(new Date()),
           invitation_code: invitationCode,
           recipient_name: newDriver.name,
           recipient_email: newDriver.email,
@@ -264,8 +266,8 @@ const DriverManagement = () => {
                     {driver.invitation
                       ? driver.invitation.createdAt
                         ? new Timestamp(
-                            driver.invitation.createdAt._seconds,
-                            driver.invitation.createdAt._nanoseconds
+                            driver.invitation.createdAt.seconds,
+                            driver.invitation.createdAt.nanoseconds
                           )
                             .toDate()
                             .toDateString()
