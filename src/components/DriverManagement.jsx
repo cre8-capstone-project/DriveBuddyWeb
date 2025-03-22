@@ -102,6 +102,21 @@ const DriverManagement = () => {
         }
         driversWithInvitations.push(driver);
       });
+      driversWithInvitations.sort((a, b) => {
+        if (
+          a.invitation.status === "pending" &&
+          b.invitation.status !== "pending"
+        ) {
+          return -1; // a comes before b
+        } else if (
+          a.invitation.status !== "pending" &&
+          b.invitation.status === "pending"
+        ) {
+          return 1; // b comes before a
+        } else {
+          return 0; // no change in order
+        }
+      });
       setDrivers(driversWithInvitations);
     } catch (error) {
       console.error("Error fetching drivers:", error);
