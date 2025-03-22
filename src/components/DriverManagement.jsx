@@ -18,6 +18,7 @@ import {
   Avatar,
   Typography,
   Box,
+  TablePagination,
 } from "@mui/material";
 //import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
@@ -36,6 +37,8 @@ import theme from "../theme.js";
 const DriverManagement = () => {
   const { user } = useAuth();
   //const navigate = useNavigate();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -60,6 +63,14 @@ const DriverManagement = () => {
     name: "",
     email: "",
   });
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const fetchDriversAndInvitations = async () => {
     try {
@@ -91,16 +102,6 @@ const DriverManagement = () => {
         }
         driversWithInvitations.push(driver);
       });
-      /*
-      for (let i = 1; i < 10; i++) {
-        driversWithInvitations.push({
-          birthday: null,
-          company_id: "",
-          email: "test@test.com",
-          name: "test",
-          picture_url: "",
-        });
-      }*/
       setDrivers(driversWithInvitations);
     } catch (error) {
       console.error("Error fetching drivers:", error);
@@ -168,7 +169,9 @@ const DriverManagement = () => {
   };
 
   return (
-    <GadgetBase sx={{ justifyContent: "flex-start", width: "100%" }}>
+    <GadgetBase
+      sx={{ justifyContent: "flex-start", width: "100%", height: "100%" }}
+    >
       <Box
         sx={{
           width: "100%",
@@ -296,6 +299,15 @@ const DriverManagement = () => {
               </TableRow>
             )}
           </TableBody>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            rowsPerPage={rowsPerPage}
+            count={drivers.length}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </Table>
       </TableContainer>
       <Dialog open={open} onClose={handleClose}>

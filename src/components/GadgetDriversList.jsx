@@ -14,12 +14,12 @@ import {
   Paper,
   Avatar,
   Skeleton,
+  TablePagination,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   startOfWeek,
   startOfMonth,
@@ -59,9 +59,8 @@ const GadgetDriversList = ({ title = "" }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [drivers, setDrivers] = useState([]);
-  const [startingPageIndex, setStartingPageIndex] = useState(0);
-  const [endingPageIndex, setEndingPageIndex] = useState(0);
-  const [totalNumberOfDrivers, setTotalNumberOfDrivers] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [mode, setMode] = useState("week-simple");
 
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
@@ -81,8 +80,17 @@ const GadgetDriversList = ({ title = "" }) => {
     },
     [`&.${tableCellClasses.body}`]: {
       fontSize: 14,
+      fontWeight: "800",
     },
   }));
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   // Initialization
   useEffect(() => {
@@ -92,9 +100,8 @@ const GadgetDriversList = ({ title = "" }) => {
       const driversResponse = await getDriversByCompany(user.company_id);
 
       // Set initial drivers state
-      setTotalNumberOfDrivers(driversResponse.length);
-      setStartingPageIndex(1);
-      setEndingPageIndex(Math.min(11, driversResponse.length));
+      //setStartingPageIndex(1);
+      //setEndingPageIndex(Math.min(11, driversResponse.length));
 
       // Then fetch face detection data
       const faceDetectionData = await getFaceDetectionSummaryByWeek(
@@ -111,8 +118,7 @@ const GadgetDriversList = ({ title = "" }) => {
         }
         driversList.push(driver);
       });
-      //driversList.sort((a, b) => a.alertPerHour < b.alertPerHour);
-      console.log(driversList);
+      driversList.sort((a, b) => b.alertPerHour - a.alertPerHour);
       setDrivers(driversList);
       setLoading(false);
     };
@@ -205,6 +211,15 @@ const GadgetDriversList = ({ title = "" }) => {
       setStartOfCurrentYear((prev) => addMonths(prev, -12));
     }
   };
+  const getTextColor = (number) => {
+    if (number === 0) {
+      return "#2e7d32";
+    } else if (number >= 1 && number <= 2) {
+      return "#1e3a8a";
+    } else {
+      return "#d32f2f";
+    }
+  };
   return (
     <GadgetBase>
       <Box
@@ -228,22 +243,10 @@ const GadgetDriversList = ({ title = "" }) => {
         </Grid>
         <Grid
           container
-          justifyContent={"space-between"}
+          justifyContent={"flex-end"}
           width={"100%"}
           paddingY={"1rem"}
         >
-          <Grid
-            container
-            direction={"row"}
-            wrap="no-wrap"
-            gap={1}
-            alignItems={"center"}
-          >
-            <VisibilityIcon />
-            <Typography variant="body2">
-              {startingPageIndex} - {endingPageIndex} of {totalNumberOfDrivers}
-            </Typography>
-          </Grid>
           <Grid>
             <WeekPicker
               onClickNextWeek={handleNext}
@@ -276,56 +279,74 @@ const GadgetDriversList = ({ title = "" }) => {
                     </TableCell>
                   </TableRow>
                 ) : drivers && drivers.length > 0 ? (
-                  drivers.map((driver, index) => (
-                    <TableRow key={index + 1}>
-                      <StyledTableCell
-                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
-                      >
-                        {loading ? (
-                          <Skeleton
-                            animation="wave"
-                            variant="circular"
-                            width={40}
-                            height={40}
-                          />
-                        ) : (
-                          <>
-                            <Avatar
-                              src={
-                                driver?.picture_url ? driver.picture_url : ""
-                              }
-                              alt={driver?.name ? driver.name : ""}
+                  drivers
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((driver, index) => (
+                      <TableRow key={index + 1}>
+                        <StyledTableCell
+                          sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                        >
+                          {loading ? (
+                            <Skeleton
+                              animation="wave"
+                              variant="circular"
+                              width={40}
+                              height={40}
                             />
-                            <Typography>
-                              {driver?.name ? driver.name : ""}
-                            </Typography>
-                          </>
-                        )}
-                      </StyledTableCell>
-                      <StyledTableCell sx={{ textAlign: "center" }}>
-                        {loading ? (
-                          <>
-                            <Skeleton variant="rectangular" />
-                          </>
-                        ) : driver?.totalSessionHours ? (
-                          parseInt(driver.totalSessionHours)
-                        ) : (
-                          "0"
-                        )}
-                      </StyledTableCell>
-                      <StyledTableCell sx={{ textAlign: "center" }}>
-                        {loading ? (
-                          <>
-                            <Skeleton variant="rectangular" />
-                          </>
-                        ) : driver?.alertPerHour ? (
-                          parseInt(driver.alertPerHour)
-                        ) : (
-                          "0"
-                        )}
-                      </StyledTableCell>
-                    </TableRow>
-                  ))
+                          ) : (
+                            <>
+                              <Avatar
+                                src={
+                                  driver?.picture_url ? driver.picture_url : ""
+                                }
+                                alt={driver?.name ? driver.name : ""}
+                              />
+                              <Typography>
+                                {driver?.name ? driver.name : ""}
+                              </Typography>
+                            </>
+                          )}
+                        </StyledTableCell>
+                        <StyledTableCell sx={{ textAlign: "center" }}>
+                          {loading ? (
+                            <>
+                              <Skeleton variant="rectangular" />
+                            </>
+                          ) : driver?.totalSessionHours ? (
+                            parseInt(driver.totalSessionHours)
+                          ) : (
+                            "0"
+                          )}
+                        </StyledTableCell>
+                        <StyledTableCell sx={{ textAlign: "center" }}>
+                          {loading ? (
+                            <>
+                              <Skeleton variant="rectangular" />
+                            </>
+                          ) : driver?.alertPerHour ? (
+                            <span
+                              style={{
+                                fontWeight: "800",
+                                color: getTextColor(
+                                  parseInt(driver.alertPerHour)
+                                ),
+                              }}
+                            >
+                              {parseInt(driver.alertPerHour)}
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                fontWeight: "800",
+                                color: getTextColor(0),
+                              }}
+                            >
+                              0
+                            </span>
+                          )}
+                        </StyledTableCell>
+                      </TableRow>
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={3}>
@@ -338,6 +359,15 @@ const GadgetDriversList = ({ title = "" }) => {
               </TableBody>
             </Table>
           </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={drivers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </Box>
       </Box>
     </GadgetBase>

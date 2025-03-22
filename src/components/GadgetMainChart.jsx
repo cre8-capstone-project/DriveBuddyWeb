@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
-import { Box, Typography, Grid2 as Grid, Skeleton } from "@mui/material";
+import { Box, Typography, Grid2 as Grid } from "@mui/material";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
 import {
@@ -132,9 +132,12 @@ const GadgetMainChart = ({ title = "" }) => {
 
   const updateChartDataStates = (obj) => {
     console.log(obj);
-    setHoursWithDetection(obj.totalSessionHours);
-    setAlertsRate(obj.alertPerHour);
-    setMostAlerts(obj.maxAlertsPerUser);
+    const totalSessionHours = parseInt(obj.totalSessionHours);
+    const alertPerHour = parseInt(obj.alertPerHour);
+    const maxAlertsPerUser = parseInt(obj.maxAlertsPerUser);
+    setHoursWithDetection(isNaN(totalSessionHours) ? 0 : totalSessionHours);
+    setAlertsRate(isNaN(alertPerHour) ? 0 : alertPerHour);
+    setMostAlerts(isNaN(maxAlertsPerUser) ? 0 : maxAlertsPerUser);
     setData(obj.data);
   };
 
