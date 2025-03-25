@@ -14,6 +14,7 @@ import {
   endOfYear,
   isWithinInterval,
   addDays,
+  isSameDay,
   addMonths,
   getDate,
   getMonth,
@@ -42,6 +43,7 @@ ChartJS.register(
 );
 import theme from "../theme.js";
 import {
+  getAverageFaceDetectionHistoryDataByDay,
   getAverageFaceDetectionHistoryDataByWeek,
   getAverageFaceDetectionHistoryDataByMonth,
   getAverageFaceDetectionHistoryDataByYear,
@@ -60,6 +62,7 @@ const GadgetMainChart = ({ title = "" }) => {
   const [alertsRate, setAlertsRate] = useState(0);
   const [mostAlerts, setMostAlerts] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [currentDay, setCurrentDay] = useState(new Date());
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -175,6 +178,7 @@ const GadgetMainChart = ({ title = "" }) => {
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
     const today = new Date();
+    setCurrentDay(today);
     setStartOfCurrentWeek(startOfWeek(today, { weekStartsOn: 1 }));
     setStartOfCurrentMonth(startOfMonth(today));
     setStartOfCurrentYear(startOfYear(today));
@@ -182,21 +186,75 @@ const GadgetMainChart = ({ title = "" }) => {
 
   // Switch chart views between week, month, and year
   useEffect(() => {
-    if (mode === "week-simple") {
+    if (mode === "day-simple") {
+      handleDailyView();
+    } else if (mode === "week-simple") {
       handleWeeklyView();
     } else if (mode === "month-simple") {
       handleMonthlyView();
     } else if (mode === "year-simple") {
       handleYearlyView();
     }
-  }, [startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
+  }, [currentDay, startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
 
   const handleModeChange = (event, newMode) => {
     if (newMode) {
       setMode(newMode);
     }
   };
+  const handleDailyView = async () => {
+    try {
+      setLoading(true);
+      const dailyAlertsData = Array(24).fill(0);
 
+      const response = await getAverageFaceDetectionHistoryDataByDay(
+        user.company_id,
+        currentDay
+      );
+      updateChartDataStates(response);
+      console.log(response);
+      response.data.forEach((entry) => {
+        const entryDate = parseISO(entry.date);
+
+        if (isSameDay(entryDate, currentDay)) {
+          console.log(entry);
+          const hourOfDay = parseInt(
+            entry.date.split(" ")[1].split(":")[0],
+            10
+          );
+          dailyAlertsData[hourOfDay] += entry.alertPerHour;
+        }
+      });
+      const newChartData = {
+        labels: Array.from({ length: 24 }, (_, i) => i.toString()),
+        datasets: [
+          {
+            data: [...dailyAlertsData], // Create a new array
+            backgroundColor: theme.palette.primary.main,
+            borderColor: theme.palette.primary.main,
+            borderRadius: 5,
+            barThickness: 5, // Non-zero value
+          },
+        ],
+      };
+
+      setChartData(newChartData);
+      setOptions((prevOptions) => ({
+        ...prevOptions,
+        scales: {
+          ...prevOptions.scales,
+          y: {
+            ...prevOptions.scales.y,
+            max: parseInt(Math.max(...dailyAlertsData) + 5),
+          },
+        },
+      }));
+    } catch (e) {
+      console.log("Error handling daily view: " + e);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleWeeklyView = async () => {
     try {
       setLoading(true);
@@ -379,7 +437,9 @@ const GadgetMainChart = ({ title = "" }) => {
   };
 
   const handleNext = () => {
-    if (["week-basic", "week-simple"].includes(mode)) {
+    if (["day-basic", "day-simple"].includes(mode)) {
+      setCurrentDay((prev) => addDays(prev, 1));
+    } else if (["week-basic", "week-simple"].includes(mode)) {
       setStartOfCurrentWeek((prev) => addDays(prev, 7));
     } else if (mode === "month-simple") {
       setStartOfCurrentMonth((prev) => addMonths(prev, 1));
@@ -389,7 +449,9 @@ const GadgetMainChart = ({ title = "" }) => {
   };
 
   const handlePrevious = () => {
-    if (["week-basic", "week-simple"].includes(mode)) {
+    if (["day-basic", "day-simple"].includes(mode)) {
+      setCurrentDay((prev) => addDays(prev, -1));
+    } else if (["week-basic", "week-simple"].includes(mode)) {
       setStartOfCurrentWeek((prev) => addDays(prev, -7));
     } else if (mode === "month-simple") {
       setStartOfCurrentMonth((prev) => addMonths(prev, -1));
@@ -469,19 +531,19 @@ const GadgetMainChart = ({ title = "" }) => {
               flex={1}
               number={parseInt(hoursWithDetection)}
               label="hours with detection"
-              info="Details here"
+              info="The time one driver spent driving (while DriveBuddy’s drowsiness detection was active) - on average for all drivers."
             />
             <OverviewNumber
               flex={1}
               number={parseInt(alertsRate)}
               label="alerts received/hour"
-              info="Details here"
+              info="The average number of alerts received per hour by one driver - on average for all drivers."
             />
             <OverviewNumber
               flex={1}
               number={parseInt(mostAlerts)}
               label="most alerts by one driver"
-              info="Details here"
+              info="The maximum number of alerts received by one driver during this period."
             />
           </Grid>
         </Box>

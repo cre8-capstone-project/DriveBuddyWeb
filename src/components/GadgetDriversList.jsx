@@ -52,6 +52,7 @@ import {
   getFaceDetectionSummaryByWeek,
   getFaceDetectionSummaryByMonth,
   getFaceDetectionSummaryByYear,
+  getFaceDetectionSummaryByDay,
 } from "../api/api.js";
 import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
 
@@ -62,6 +63,8 @@ const GadgetDriversList = ({ title = "" }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [mode, setMode] = useState("week-simple");
+
+  const [currentDay, setCurrentDay] = useState(new Date());
 
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -127,6 +130,7 @@ const GadgetDriversList = ({ title = "" }) => {
   // When the mode is changed, reset the start date of the week or month
   useEffect(() => {
     const today = new Date();
+    setCurrentDay(today);
     setStartOfCurrentWeek(startOfWeek(today, { weekStartsOn: 1 }));
     setStartOfCurrentMonth(startOfMonth(today));
     setStartOfCurrentYear(startOfYear(today));
@@ -134,7 +138,9 @@ const GadgetDriversList = ({ title = "" }) => {
 
   // Switch chart views between week, month, and year
   useEffect(() => {
-    if (mode === "week-simple") {
+    if (mode === "day-simple") {
+      handleDailyView();
+    } else if (mode === "week-simple") {
       handleWeeklyView();
     } else if (mode === "month-simple") {
       handleMonthlyView();
@@ -168,6 +174,14 @@ const GadgetDriversList = ({ title = "" }) => {
     }
   };
 
+  const handleDailyView = async () => {
+    const response = await getFaceDetectionSummaryByDay(
+      user.company_id,
+      currentDay
+    );
+    updateDriversWithFaceData(drivers, response);
+  };
+
   const handleWeeklyView = async () => {
     const response = await getFaceDetectionSummaryByWeek(
       user.company_id,
@@ -193,7 +207,9 @@ const GadgetDriversList = ({ title = "" }) => {
   };
 
   const handleNext = () => {
-    if (["week-basic", "week-simple"].includes(mode)) {
+    if (["day-basic", "day-simple"].includes(mode)) {
+      setCurrentDay((prev) => addDays(prev, 1));
+    } else if (["week-basic", "week-simple"].includes(mode)) {
       setStartOfCurrentWeek((prev) => addDays(prev, 7));
     } else if (mode === "month-simple") {
       setStartOfCurrentMonth((prev) => addMonths(prev, 1));
@@ -203,7 +219,9 @@ const GadgetDriversList = ({ title = "" }) => {
   };
 
   const handlePrevious = () => {
-    if (["week-basic", "week-simple"].includes(mode)) {
+    if (["day-basic", "day-simple"].includes(mode)) {
+      setCurrentDay((prev) => addDays(prev, -1));
+    } else if (["week-basic", "week-simple"].includes(mode)) {
       setStartOfCurrentWeek((prev) => addDays(prev, -7));
     } else if (mode === "month-simple") {
       setStartOfCurrentMonth((prev) => addMonths(prev, -1));

@@ -34,6 +34,16 @@ const PeriodButtonGroup = ({ mode, handleModeChange }) => {
       }}
     >
       <ToggleButton
+        value="day-simple"
+        aria-label="day"
+        sx={{
+          textTransform: "capitalize",
+          padding: "4px 10px",
+        }}
+      >
+        Day
+      </ToggleButton>
+      <ToggleButton
         value="week-simple"
         aria-label="week"
         sx={{

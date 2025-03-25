@@ -23,20 +23,25 @@ export const WeekPicker = ({
   onSelectDate = null,
   onClickNextWeek = null,
   onClickPreviousWeek = null,
-  displayMode = "week-basic", // "week-basic", "week-simple, "month-simple"
+  displayMode = "week-basic", // "day-basic", "week-basic", "week-simple, "month-simple"
   scheduledDates = [],
   scheduledDatesBorderColor = "primary.main",
   scheduledDatesBgColor = "transparent",
 }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [startDate, setStartDate] = useState(getStartOfWeek(new Date()));
   const [endDate, setEndDate] = useState(
     addDays(getStartOfWeek(new Date()), 6)
   );
-  const today = new Date();
   const timeZone = "America/Vancouver";
 
   useEffect(() => {
-    if (displayMode === "month-simple") {
+    const today = new Date().setHours(0, 0, 0, 0);
+    if (displayMode === "day-simple") {
+      setCurrentDate(today);
+      setStartDate(today);
+      setEndDate(today);
+    } else if (displayMode === "month-simple") {
       setStartDate(startOfMonth(today));
       setEndDate(endOfMonth(today));
     } else if (displayMode === "year-simple") {
@@ -53,7 +58,10 @@ export const WeekPicker = ({
   }
 
   const handlerNextWeek = () => {
-    if (displayMode === "month-simple") {
+    if (displayMode === "day-simple") {
+      setStartDate((prev) => addDays(prev, 1));
+      setEndDate((prev) => addDays(prev, 1));
+    } else if (displayMode === "month-simple") {
       setStartDate((prev) => startOfMonth(addMonths(prev, 1)));
       setEndDate((prev) => endOfMonth(addMonths(prev, 1)));
       if (typeof onClickNextWeek === "function") {
@@ -75,7 +83,10 @@ export const WeekPicker = ({
   };
 
   const handlerPreviousWeek = () => {
-    if (displayMode === "month-simple") {
+    if (displayMode === "day-simple") {
+      setStartDate((prev) => addDays(prev, -1));
+      setEndDate((prev) => addDays(prev, -1));
+    } else if (displayMode === "month-simple") {
       setStartDate((prev) => startOfMonth(subMonths(prev, 1)));
       setEndDate((prev) => endOfMonth(subMonths(prev, 1)));
       if (typeof onClickPreviousWeek === "function") {
@@ -171,12 +182,12 @@ export const WeekPicker = ({
                   lineHeight: "30px",
                   border: "1px solid",
                   borderRadius: "50%",
-                  borderColor: isSameDay(day, today)
+                  borderColor: isSameDay(day, currentDate)
                     ? "secondary.main"
                     : isScheduled(day)
                       ? scheduledDatesBorderColor
                       : "transparent",
-                  backgroundColor: isSameDay(day, today)
+                  backgroundColor: isSameDay(day, currentDate)
                     ? "transparent"
                     : isScheduled(day)
                       ? scheduledDatesBgColor
@@ -190,7 +201,9 @@ export const WeekPicker = ({
           ))
         ) : (
           <Typography sx={{ fontSize: "0.9rem" }}>
-            {`${format(startDate, "MMM d, yyyy")} - ${format(endDate, "MMM d, yyyy")}`}
+            {isSameDay(startDate, endDate)
+              ? `${format(startDate, "MMM d, yyyy")}`
+              : `${format(startDate, "MMM d, yyyy")} - ${format(endDate, "MMM d, yyyy")}`}
           </Typography>
         )}
 

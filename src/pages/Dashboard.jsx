@@ -41,12 +41,12 @@ export const Dashboard = (props) => {
         {/* LEFT COLUMN */}
         <Grid xs={12} md={8} flexGrow={isOneColumn ? 1 : 0}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <GadgetMainChart title="Average driver" />
+            <GadgetMainChart title="Average of all drivers" />
           </Box>
         </Grid>
 
         {/* RIGHT COLUMN */}
-        <Grid xs={12} md={4} flexGrow={isOneColumn ? 1 : 0}>
+        <Grid xs={12} md={4} flexGrow={isOneColumn ? 1 : 1}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <GadgetDriversList title="Individual report" />
           </Box>
