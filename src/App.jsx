@@ -75,7 +75,7 @@ function ProtectedRoutes() {
                   path="/manage"
                   element={<Manage title="Manage Drivers" />}
                 />
-                <Route path="/profile" element={<Profile title="Profile" />} />
+                <Route path="/profile" element={<Profile title="Company" />} />
                 <Route path="/driver/:id" element={<DriverDetails />} />
               </Route>
 

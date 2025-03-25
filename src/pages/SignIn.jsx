@@ -4,10 +4,18 @@ import { setPageTitle, applyBodyClass } from "../utils/utils";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../utils/AuthProvider.jsx";
 import { logInWithEmailAndPassword } from "../firebase/auth.js";
-import { Button, TextField, Box, Typography, Container } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Container,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import logo from "../assets/DriveBuddyLogoName.svg";
-import "../gradientBackground.css";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export const SignIn = (props) => {
   const { user } = useAuth();
@@ -23,7 +31,8 @@ export const SignIn = (props) => {
     applyBodyClass(location.pathname);
   }, []);
 
-  // Transition to Dashboard when user authentication is successful
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
   useEffect(() => {
     if (user) {
@@ -121,6 +130,22 @@ export const SignIn = (props) => {
                   value={password}
                   sx={{ marginTop: 1 }}
                   onChange={(e) => setPassword(e.target.value)}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={(e) => e.preventDefault()}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
                 {error && <Typography color="error">{error}</Typography>}
 

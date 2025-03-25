@@ -1,8 +1,8 @@
 import axios from "axios";
 import { formatDate } from "../utils/utils";
 import { getAuth } from "firebase/auth";
-//const API_URL = "https://drivebuddy.wmdd4950.com/api/";
-const API_URL = "http://localhost:3000/";
+const API_URL = "https://drivebuddy.wmdd4950.com/api/";
+//const API_URL = "http://localhost:3000/";
 // Common setting for API requests
 const axiosClient = axios.create({
   baseURL: API_URL,

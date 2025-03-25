@@ -186,9 +186,7 @@ const DriverManagement = () => {
   };
 
   return (
-    <GadgetBase
-      sx={{ justifyContent: "flex-start", width: "100%", height: "100%" }}
-    >
+    <GadgetBase sx={{ width: "100%", height: "fit-content" }}>
       <Box
         sx={{
           width: "100%",
@@ -212,121 +210,123 @@ const DriverManagement = () => {
           Add Driver
         </Button>
       </Box>
-
-      <TableContainer
-        component={Paper}
-        style={{ marginTop: 2, height: "100%" }}
-      >
-        <Table>
-          <TableHead className="">
-            <TableRow>
-              <StyledTableCell className="tableHeaderCell">
-                Driver Name
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Email
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Status
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Date Invited
-              </StyledTableCell>
-              <StyledTableCell className="tableHeaderCell">
-                Date Joined
-              </StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
+      <Box width={"100%"}>
+        <TableContainer component={Paper} style={{ marginTop: 2 }} width="100%">
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5}>
-                  <Typography variant="body1" sx={{ textAlign: "center" }}>
-                    Loading...
-                  </Typography>
-                </TableCell>
+                <StyledTableCell className="tableHeaderCell">
+                  Driver Name
+                </StyledTableCell>
+                <StyledTableCell className="tableHeaderCell">
+                  Email
+                </StyledTableCell>
+                <StyledTableCell className="tableHeaderCell">
+                  Status
+                </StyledTableCell>
+                <StyledTableCell className="tableHeaderCell">
+                  Date Invited
+                </StyledTableCell>
+                <StyledTableCell className="tableHeaderCell">
+                  Date Joined
+                </StyledTableCell>
               </TableRow>
-            ) : drivers && drivers.length > 0 ? (
-              drivers.map((driver) => (
-                <TableRow key={driver.id}>
-                  <StyledTableCell
-                    sx={{ display: "flex", gap: 1, alignItems: "center" }}
-                  >
-                    <Avatar src={driver.picture_url} alt={driver.name} />
-                    <Typography>{driver.name}</Typography>
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ fontWeight: "bold" }}>
-                    {driver.email}
-                  </StyledTableCell>
-                  <StyledTableCell
-                    sx={
-                      driver.invitation?.status
-                        ? driver.invitation.status == "accepted"
-                          ? {
-                              color: theme.palette.success.main,
-                              fontWeight: "bold",
-                            }
-                          : {
-                              color: theme.palette.primary.main,
-                              fontWeight: "bold",
-                            }
-                        : {}
-                    }
-                  >
-                    {driver.invitation
-                      ? capitalizeFirstLetter(driver.invitation.status)
-                      : "N/A"}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {driver.invitation
-                      ? driver.invitation.createdAt
-                        ? new Timestamp(
-                            driver.invitation.createdAt.seconds,
-                            driver.invitation.createdAt.nanoseconds
-                          )
-                            .toDate()
-                            .toDateString()
-                        : "N/A"
-                      : "N/A"}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {driver.invitation
-                      ? driver.invitation.acceptedAt
-                        ? new Timestamp(
-                            driver.invitation.acceptedAt._seconds,
-                            driver.invitation.acceptedAt._nanoseconds
-                          )
-                            .toDate()
-                            .toDateString()
-                        : "N/A"
-                      : "N/A"}
-                  </StyledTableCell>
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <Typography variant="body1" sx={{ textAlign: "center" }}>
+                      Loading...
+                    </Typography>
+                  </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5}>
-                  <Typography variant="h3" sx={{ textAlign: "center" }}>
-                    There are no drivers in your company.
-                  </Typography>
-                  <Typography variant="body1" sx={{ textAlign: "center" }}>
-                    Click &quot;add drivers&quot; to send an invitation
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            rowsPerPage={rowsPerPage}
-            count={drivers.length}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Table>
-      </TableContainer>
+              ) : drivers && drivers.length > 0 ? (
+                drivers
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((driver) => (
+                    <TableRow key={driver.id}>
+                      <StyledTableCell
+                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                      >
+                        <Avatar src={driver.picture_url} alt={driver.name} />
+                        <Typography>{driver.name}</Typography>
+                      </StyledTableCell>
+                      <StyledTableCell sx={{ fontWeight: "bold" }}>
+                        {driver.email}
+                      </StyledTableCell>
+                      <StyledTableCell
+                        sx={
+                          driver.invitation?.status
+                            ? driver.invitation.status == "accepted"
+                              ? {
+                                  color: theme.palette.success.main,
+                                  fontWeight: "bold",
+                                }
+                              : {
+                                  color: theme.palette.primary.main,
+                                  fontWeight: "bold",
+                                }
+                            : {}
+                        }
+                      >
+                        {driver.invitation
+                          ? capitalizeFirstLetter(driver.invitation.status)
+                          : "N/A"}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {driver.invitation
+                          ? driver.invitation.createdAt
+                            ? new Timestamp(
+                                driver.invitation.createdAt.seconds,
+                                driver.invitation.createdAt.nanoseconds
+                              )
+                                .toDate()
+                                .toDateString()
+                            : "N/A"
+                          : "N/A"}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {driver.invitation
+                          ? driver.invitation.acceptedAt
+                            ? new Timestamp(
+                                driver.invitation.acceptedAt._seconds,
+                                driver.invitation.acceptedAt._nanoseconds
+                              )
+                                .toDate()
+                                .toDateString()
+                            : "N/A"
+                          : "N/A"}
+                      </StyledTableCell>
+                    </TableRow>
+                  ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <Typography variant="h3" sx={{ textAlign: "center" }}>
+                      There are no drivers in your company.
+                    </Typography>
+                    <Typography variant="body1" sx={{ textAlign: "center" }}>
+                      Click &quot;add drivers&quot; to send an invitation
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          width={"100%"}
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={drivers.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Box>
+
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{formData.id ? "Edit Driver" : "Add Driver"}</DialogTitle>
         <DialogContent>

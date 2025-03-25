@@ -140,10 +140,12 @@ export const WeekPicker = ({
       >
         <IconButton
           sx={{
-            padding: "0",
+            padding: 1,
             "&:focus": { outline: "none" },
-            "&:hover": { backgroundColor: "transparent" },
+            "&:hover": { backgroundColor: "#CCCCC" },
+            fontSize: "1rem",
           }}
+          color="primary"
           onClick={handlerPreviousWeek}
         >
           <ArrowBackIosNewIcon />
@@ -159,11 +161,11 @@ export const WeekPicker = ({
               }}
               onClick={() => handleDayClick(day)}
             >
-              <Typography>{format(day, "E").charAt(0)}</Typography>{" "}
+              <Typography>{format(day, "E").charAt(0)}</Typography>
               {/* Day of week */}
               <Typography
                 sx={{
-                  fontSize: "0.8rem",
+                  fontSize: "0.5rem",
                   width: "30px",
                   height: "30px",
                   lineHeight: "30px",
@@ -182,22 +184,24 @@ export const WeekPicker = ({
                 }}
               >
                 {format(day, "dd")}
-              </Typography>{" "}
+              </Typography>
               {/* Date */}
             </Box>
           ))
         ) : (
-          <Typography>
+          <Typography sx={{ fontSize: "0.9rem" }}>
             {`${format(startDate, "MMM d, yyyy")} - ${format(endDate, "MMM d, yyyy")}`}
           </Typography>
         )}
 
         <IconButton
           onClick={handlerNextWeek}
+          color="primary"
+          size="small"
           sx={{
-            padding: "0",
+            padding: 1,
             "&:focus": { outline: "none" },
-            "&:hover": { backgroundColor: "transparent" },
+            "&:hover": { backgroundColor: "#CCCCC" },
           }}
         >
           <ArrowForwardIosIcon />

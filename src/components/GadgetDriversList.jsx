@@ -220,6 +220,7 @@ const GadgetDriversList = ({ title = "" }) => {
       return "#d32f2f";
     }
   };
+
   return (
     <GadgetBase>
       <Box
@@ -236,24 +237,30 @@ const GadgetDriversList = ({ title = "" }) => {
           container
           direction={"row"}
           justifyContent={"space-between"}
-          sx={{ width: "100%" }}
+          rowGap={2}
+          sx={{
+            width: "100%",
+            alignContent: "center",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
           <Typography variant="h4">{title}</Typography>
           <PeriodButtonGroup mode={mode} handleModeChange={handleModeChange} />
         </Grid>
         <Grid
           container
-          justifyContent={"flex-end"}
+          justifyContent={"center"}
           width={"100%"}
-          paddingY={"1rem"}
+          paddingY={"0.5rem"}
         >
-          <Grid>
+          <Box width={{ md: "100%", lg: "65%" }}>
             <WeekPicker
               onClickNextWeek={handleNext}
               onClickPreviousWeek={handlePrevious}
               displayMode={mode}
             />
-          </Grid>
+          </Box>
         </Grid>
         <Box sx={{ width: "100%" }}>
           <TableContainer component={Paper}>
@@ -284,7 +291,16 @@ const GadgetDriversList = ({ title = "" }) => {
                     .map((driver, index) => (
                       <TableRow key={index + 1}>
                         <StyledTableCell
-                          sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                          sx={{
+                            display: "flex",
+                            gap: 1,
+                            alignItems: "center",
+                            maxWidth: {
+                              xs: "unset", // Extra small screens (mobile)
+                              xl: "250px", // Extra large screens
+                            },
+                            width: "100%",
+                          }}
                         >
                           {loading ? (
                             <Skeleton
@@ -301,7 +317,21 @@ const GadgetDriversList = ({ title = "" }) => {
                                 }
                                 alt={driver?.name ? driver.name : ""}
                               />
-                              <Typography>
+                              {/** HERE IS THE PART I WANT HELP WITH */}
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: {
+                                    xs: "unset", // Extra small screens (mobile)
+                                    lg: "200px",
+                                    xl: "250px", // Extra large screens
+                                  },
+                                  width: "100%",
+                                }}
+                              >
                                 {driver?.name ? driver.name : ""}
                               </Typography>
                             </>

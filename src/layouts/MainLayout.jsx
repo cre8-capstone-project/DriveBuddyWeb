@@ -100,7 +100,11 @@ export const MainLayout = () => {
         >
           <Box
             sx={{
-              margin: 2,
+              margin: {
+                xs: 0,
+                sm: 1,
+                md: 2,
+              },
               minHeight: "calc(100vh - 180px)",
             }}
           >

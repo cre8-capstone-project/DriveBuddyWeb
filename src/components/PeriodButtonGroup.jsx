@@ -1,21 +1,31 @@
-import { ToggleButtonGroup, ToggleButton } from "@mui/material";
+import { ToggleButtonGroup, ToggleButton, useMediaQuery } from "@mui/material";
 import PropTypes from "prop-types";
 
 const PeriodButtonGroup = ({ mode, handleModeChange }) => {
+  const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <ToggleButtonGroup
       value={mode}
       exclusive
       onChange={handleModeChange}
+      fullWidth={isMobile} // Default value
       aria-label="mode"
       sx={{
+        border: "1px solid #ccc",
+        paddingY: 1,
+        paddingX: 2,
+        gap: 1,
         "& .MuiToggleButton-root": {
-          border: "1px solid #ccc",
+          fontWeight: 700,
+          border: "1px solid transparent",
+          borderRadius: 2,
+
           "&.Mui-selected": {
             borderColor: "lightgray",
             outline: "none",
             color: "#1E3A8A",
             backgroundColor: "white",
+            boxShadow: "0px 1px 5px #cccc",
           },
           "&:focus": {
             outline: "none",

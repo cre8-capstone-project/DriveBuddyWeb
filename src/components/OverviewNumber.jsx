@@ -8,8 +8,22 @@ export const OverviewNumber = ({
   info = "title",
 }) => {
   return (
-    <Grid flex={1}>
-      <Typography variant="body1" sx={{ fontSize: "2rem", fontWeight: "500" }}>
+    <Grid
+      sx={{
+        flex: {
+          xs: "1 1 100%", // Take full width on xs screens
+          sm: 1, // Flex 1 on sm screens and above
+        },
+        width: {
+          xs: "100%", // Full width on xs screens
+          sm: "auto", // Auto width on sm screens and above
+        },
+      }}
+    >
+      <Typography
+        variant="body1"
+        sx={{ fontSize: "1.8rem", fontWeight: "500" }}
+      >
         {number}
       </Typography>
       <Grid container spacing={1} flexWrap={"nowrap"}>

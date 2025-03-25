@@ -9,7 +9,7 @@ export const GadgetBase = ({
 }) => {
   return (
     <Paper
-      elevation={frame ? 3 : 0}
+      elevation={2}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -17,9 +17,9 @@ export const GadgetBase = ({
         justifyContent: "center",
         gap: 4,
         padding: frame ? 2 : 0,
-        borderRadius: "15px",
+        borderRadius: "10px",
         backgroundColor: frame ? "rgba(255, 255, 255, .8)" : "transparent",
-        border: "2px solid white",
+        border: "1px solid #CCCCCC",
         ...sx,
       }}
     >

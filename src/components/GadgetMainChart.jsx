@@ -48,6 +48,7 @@ import {
 } from "../api/api.js";
 import { useAuth } from "../utils/AuthProvider.jsx";
 import PeriodButtonGroup from "./PeriodButtonGroup.jsx";
+import "./GadgetMainChart.css";
 
 const GadgetMainChart = ({ title = "" }) => {
   const { user } = useAuth();
@@ -78,20 +79,20 @@ const GadgetMainChart = ({ title = "" }) => {
     aspectRatio: 2,
     plugins: {
       legend: {
-        display: true,
+        display: false,
       },
       tooltip: {
         mode: "index",
-        intersect: false,
+        intersect: true,
         padding: 10,
-        titleColor: "#000",
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        borderColor: "rgba(0, 0, 0, 0.5)",
+        titleColor: "#1E3A8A",
+        backgroundColor: "#F5F5F5",
+        borderColor: "#CCCC",
         borderWidth: 1,
-        bodyColor: "#000",
-        titleFont: { size: 16, weight: "bold" },
+        bodyColor: "#1E3A8A",
+        titleFont: { size: 16, weight: 600 },
         bodyFont: { size: 16 },
-        caretSize: 10,
+        caretSize: 5,
         cornerRadius: 15,
         position: "average",
         yAlign: "bottom",
@@ -131,14 +132,12 @@ const GadgetMainChart = ({ title = "" }) => {
   });
 
   const updateChartDataStates = (obj) => {
-    // console.log(obj);
     const totalSessionHours = parseInt(obj.totalSessionHours);
     const alertPerHour = parseInt(obj.alertPerHour);
     const maxAlertsPerUser = parseInt(obj.maxAlertsPerUser);
     setHoursWithDetection(isNaN(totalSessionHours) ? 0 : totalSessionHours);
     setAlertsRate(isNaN(alertPerHour) ? 0 : alertPerHour);
     setMostAlerts(isNaN(maxAlertsPerUser) ? 0 : maxAlertsPerUser);
-    // setData(obj.data);
   };
 
   // Initialization
@@ -226,7 +225,6 @@ const GadgetMainChart = ({ title = "" }) => {
         labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
         datasets: [
           {
-            label: "Alerts/Hour",
             data: [...weeklyAlertsData], // Create a new array
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
@@ -285,7 +283,6 @@ const GadgetMainChart = ({ title = "" }) => {
         ),
         datasets: [
           {
-            label: "Alerts/Hour",
             data: [...monthlyAlertsData], // Create a new array
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
@@ -354,7 +351,6 @@ const GadgetMainChart = ({ title = "" }) => {
         ],
         datasets: [
           {
-            label: "Alerts/Hour",
             data: [...yearlyAlertsData], // Create a new array
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
@@ -416,8 +412,13 @@ const GadgetMainChart = ({ title = "" }) => {
         <Grid
           container
           direction={"row"}
-          justifyContent={"space-between"}
-          sx={{ width: "100%" }}
+          rowGap={2}
+          sx={{
+            width: "100%",
+            alignContent: "center",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
           <Typography variant="h4">{title}</Typography>
           <PeriodButtonGroup mode={mode} handleModeChange={handleModeChange} />
@@ -441,7 +442,7 @@ const GadgetMainChart = ({ title = "" }) => {
           <Typography
             variant="h3"
             sx={{
-              fontSize: "1rem",
+              fontSize: "0.9rem",
               margin: "0",
               marginBottom: "1rem",
               fontWeight: "500",
@@ -449,7 +450,21 @@ const GadgetMainChart = ({ title = "" }) => {
           >
             Driving hours overview
           </Typography>
-          <Grid container spacing={1}>
+          <Grid
+            container
+            spacing={1}
+            sx={{
+              flexDirection: {
+                xs: "column", // Stack vertically on extra small screens
+                sm: "row", // Row layout on small screens and above
+              },
+              justifyContent: { xs: "center", sm: "space-between" },
+              gap: {
+                xs: 2, // Add some vertical spacing between stacked items
+                sm: 1,
+              },
+            }}
+          >
             <OverviewNumber
               flex={1}
               number={parseInt(hoursWithDetection)}
@@ -482,6 +497,17 @@ const GadgetMainChart = ({ title = "" }) => {
             <Typography>No data available</Typography>
           )}
         </Box>
+        <Grid
+          container
+          padding={"0.5rem 0"}
+          justifyContent={"flex-start"}
+          width={"100%"}
+          alignItems={"center"}
+          gap={1}
+        >
+          <span className="chartColorLabel"></span>
+          <Typography>Alerts received/hour</Typography>
+        </Grid>
       </Box>
     </GadgetBase>
   );

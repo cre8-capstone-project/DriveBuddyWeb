@@ -34,9 +34,10 @@ export const Manage = (props) => {
     <Box
       sx={{
         display: "flex",
-        height: "100%",
-        width: "100%",
-        justifyContent: "center",
+        flexDirection: "column",
+        flexGrow: 1,
+        overflowY: "auto",
+        paddingBottom: "1rem",
       }}
     >
       <DriverManagement />

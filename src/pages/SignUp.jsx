@@ -3,12 +3,20 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { setPageTitle, applyBodyClass } from "../utils/utils";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { Button, TextField, Box, Typography, Container } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Box,
+  Typography,
+  Container,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { signUpWithEmailAndPassword } from "../firebase/auth.js";
 import Grid from "@mui/material/Grid2";
 import logo from "../assets/DriveBuddyLogoName.svg";
 import { useAuth } from "../utils/AuthProvider";
-import "../gradientBackground.css";
 
 export const SignUp = (props) => {
   const { user } = useAuth();
@@ -19,6 +27,10 @@ export const SignUp = (props) => {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
 
   // Initialization
   useEffect(() => {
@@ -122,12 +134,28 @@ export const SignUp = (props) => {
                   fullWidth
                   name="password"
                   label="Password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   autoComplete="current-password"
                   value={password}
                   sx={{ marginTop: 1 }}
                   onChange={(e) => setPassword(e.target.value)}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={handleClickShowPassword}
+                            onMouseDown={(e) => e.preventDefault()}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
                 <TextField
                   variant="outlined"
