@@ -54,13 +54,16 @@ export const WeekPicker = ({
   }, [displayMode]);
 
   function getStartOfWeek(date) {
-    return startOfWeek(date, { weekStartsOn: 1 }); // 1 = Monday
+    return startOfWeek(date, { weekStartsOn: 0 }); // 0 = Sunday
   }
 
   const handlerNextWeek = () => {
     if (displayMode === "day-simple") {
       setStartDate((prev) => addDays(prev, 1));
       setEndDate((prev) => addDays(prev, 1));
+      if (typeof onClickNextWeek === "function") {
+        onClickNextWeek(addDays(startDate, 1));
+      }
     } else if (displayMode === "month-simple") {
       setStartDate((prev) => startOfMonth(addMonths(prev, 1)));
       setEndDate((prev) => endOfMonth(addMonths(prev, 1)));
@@ -86,6 +89,9 @@ export const WeekPicker = ({
     if (displayMode === "day-simple") {
       setStartDate((prev) => addDays(prev, -1));
       setEndDate((prev) => addDays(prev, -1));
+      if (typeof onClickPreviousWeek === "function") {
+        onClickPreviousWeek(addDays(startDate, -1));
+      }
     } else if (displayMode === "month-simple") {
       setStartDate((prev) => startOfMonth(subMonths(prev, 1)));
       setEndDate((prev) => endOfMonth(subMonths(prev, 1)));
