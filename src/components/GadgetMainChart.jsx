@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
-import { Box, Typography, Grid2 as Grid } from "@mui/material";
+import { Box, Typography, Grid2 as Grid, CircularProgress } from "@mui/material";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
 import {
@@ -11,10 +11,7 @@ import {
   startOfMonth,
   startOfYear,
   endOfMonth,
-  endOfYear,
-  isWithinInterval,
   addDays,
-  isSameDay,
   addMonths,
   getDate,
   getMonth,
@@ -57,14 +54,14 @@ const GadgetMainChart = ({ title = "" }) => {
   const chartRef = useRef(null);
   const [windowWidth, setWindowWidth] = useState(0);
   const [mode, setMode] = useState("week-simple");
-  // const [data, setData] = useState([]);
+  const modeRef = useRef(mode);
   const [hoursWithDetection, setHoursWithDetection] = useState(0);
   const [alertsRate, setAlertsRate] = useState(0);
   const [mostAlerts, setMostAlerts] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentDay, setCurrentDay] = useState(new Date());
   const [startOfCurrentWeek, setStartOfCurrentWeek] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
+    startOfWeek(new Date(), { weekStartsOn: 0 })
   );
   const [startOfCurrentMonth, setStartOfCurrentMonth] = useState(
     startOfMonth(new Date())
@@ -99,6 +96,36 @@ const GadgetMainChart = ({ title = "" }) => {
         cornerRadius: 15,
         position: "average",
         yAlign: "bottom",
+        callbacks: {
+          title: function () {
+            return 'Total'
+          },
+          label: function (context) {
+            const index = context.dataIndex;
+            const rawDate = context.chart.data.datasets[0].data[index];
+            let formattedDate = "N/A";
+            if (modeRef.current === "year-simple") {
+              formattedDate = format(parseISO(rawDate), "MMM yyyy")
+            } else {
+              formattedDate = format(parseISO(rawDate), "MMM dd, yyyy")
+            }
+
+            const hour = String(index).padStart(2, "0");
+            const time = `${hour}:00`;
+            const fullDateTime = rawDate ? `${formattedDate} ${time}` : "N/A";
+
+            const alerts = context.chart.data.datasets[1].data[index];
+
+            if (modeRef.current === "day-simple") {
+              return [`${alerts ?? 0} alerts received/hour`,`${fullDateTime ?? 'N/A'}`];
+            } else if (modeRef.current === "year-simple") {
+              return [`${alerts ?? 0} alerts received/hour`,`${formattedDate ?? 'N/A'}`];
+            } else {
+              return [`${alerts ?? 0} alerts received/hour`,`${formattedDate ?? 'N/A'}`];
+            }
+          },
+        },
+        displayColors: false,
       },
     },
     scales: {
@@ -121,7 +148,7 @@ const GadgetMainChart = ({ title = "" }) => {
     },
   });
   const [chartData, setChartData] = useState({
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     datasets: [
       {
         label: "Alerts received/Hour",
@@ -146,7 +173,6 @@ const GadgetMainChart = ({ title = "" }) => {
   // Initialization
   useEffect(() => {
     const chartInstance = chartRef.current?.chartInstance;
-    handleWeeklyView();
 
     // Cleanup
     return () => {
@@ -179,13 +205,14 @@ const GadgetMainChart = ({ title = "" }) => {
   useEffect(() => {
     const today = new Date();
     setCurrentDay(today);
-    setStartOfCurrentWeek(startOfWeek(today, { weekStartsOn: 1 }));
+    setStartOfCurrentWeek(startOfWeek(today, { weekStartsOn: 0 }));
     setStartOfCurrentMonth(startOfMonth(today));
     setStartOfCurrentYear(startOfYear(today));
   }, [mode]);
 
   // Switch chart views between week, month, and year
   useEffect(() => {
+    console.log("[DEBUG] Mode changed to: " + mode);
     if (mode === "day-simple") {
       handleDailyView();
     } else if (mode === "week-simple") {
@@ -200,12 +227,16 @@ const GadgetMainChart = ({ title = "" }) => {
   const handleModeChange = (event, newMode) => {
     if (newMode) {
       setMode(newMode);
+      modeRef.current = newMode;
     }
   };
   const handleDailyView = async () => {
     try {
       setLoading(true);
-      const dailyAlertsData = Array(24).fill(0);
+      const dailyAlertsData = Array.from({ length: 24 }, () => ({
+        date: null,
+        alerts: 0,
+      }));
 
       const response = await getAverageFaceDetectionHistoryDataByDay(
         user.company_id,
@@ -214,26 +245,28 @@ const GadgetMainChart = ({ title = "" }) => {
       updateChartDataStates(response);
       console.log(response);
       response.data.forEach((entry) => {
-        const entryDate = parseISO(entry.date);
-
-        if (isSameDay(entryDate, currentDay)) {
-          console.log(entry);
-          const hourOfDay = parseInt(
-            entry.date.split(" ")[1].split(":")[0],
-            10
-          );
-          dailyAlertsData[hourOfDay] += entry.alertPerHour;
-        }
+        const hourOfDay = parseInt(
+          entry.date.split(" ")[1].split(":")[0],
+          10
+        );
+        dailyAlertsData[hourOfDay].alerts = entry.alertPerHour;
+        dailyAlertsData[hourOfDay].date = entry.date;
       });
       const newChartData = {
         labels: Array.from({ length: 24 }, (_, i) => i.toString()),
         datasets: [
           {
-            data: [...dailyAlertsData], // Create a new array
+            label: "Dates",
+            data: dailyAlertsData.map((data) => data.date),
+            hidden: true, // Hide this dataset from the chart
+          },
+          {
+            label: "Alerts",
+            data: dailyAlertsData.map((data) => data.alerts),
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
             borderRadius: 5,
-            barThickness: 5, // Non-zero value
+            // barThickness: 5,
           },
         ],
       };
@@ -258,36 +291,39 @@ const GadgetMainChart = ({ title = "" }) => {
   const handleWeeklyView = async () => {
     try {
       setLoading(true);
-      const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
-      const weeklyAlertsData = Array(7).fill(0);
+      // const endOfCurrentWeek = addDays(startOfCurrentWeek, 6);
+      const weeklyAlertsData = Array.from({ length: 7 }, () => ({
+        date: null,
+        alerts: 0,
+      }));
 
       const response = await getAverageFaceDetectionHistoryDataByWeek(
         user.company_id,
         startOfCurrentWeek
       );
       updateChartDataStates(response);
-
+      console.log(response);
       response.data.forEach((entry) => {
         const entryDate = parseISO(entry.date);
-        if (
-          isWithinInterval(entryDate, {
-            start: startOfCurrentWeek,
-            end: endOfCurrentWeek,
-          })
-        ) {
-          const dayOfWeek = (parseInt(format(entryDate, "i")) - 1 + 7) % 7;
-          weeklyAlertsData[dayOfWeek] += entry.alertPerHour;
-        }
+        const dayOfWeek = (parseInt(format(entryDate, "e")) - 1 + 7) % 7;
+        weeklyAlertsData[dayOfWeek].alerts = entry.alertPerHour;
+        weeklyAlertsData[dayOfWeek].date = entry.date;
       });
       const newChartData = {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         datasets: [
           {
-            data: [...weeklyAlertsData], // Create a new array
+            label: "Dates",
+            data: weeklyAlertsData.map((data) => data.date),
+            hidden: true, // Hide this dataset from the chart
+          },
+          {
+            label: "Alerts",
+            data: weeklyAlertsData.map((data) => data.alerts),
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
             borderRadius: 5,
-            barThickness: 5, // Non-zero value
+            // barThickness: 5,
           },
         ],
       };
@@ -309,31 +345,27 @@ const GadgetMainChart = ({ title = "" }) => {
       setLoading(false);
     }
   };
-
   const handleMonthlyView = async () => {
     try {
       setLoading(true);
       const endOfCurrentMonth = endOfMonth(startOfCurrentMonth);
       const daysInMonth = getDate(endOfCurrentMonth);
-      const monthlyAlertsData = Array(daysInMonth).fill(0);
+      const monthlyAlertsData = Array.from({ length: daysInMonth }, () => ({
+        date: null,
+        alerts: 0,
+      }));
 
       const response = await getAverageFaceDetectionHistoryDataByMonth(
         user.company_id,
         startOfCurrentMonth
       );
       updateChartDataStates(response);
-
+      console.log(response);
       response.data.forEach((entry) => {
         const entryDate = parseISO(entry.date);
-        if (
-          isWithinInterval(entryDate, {
-            start: startOfCurrentMonth,
-            end: endOfCurrentMonth,
-          })
-        ) {
-          const dayOfMonth = getDate(entryDate) - 1;
-          monthlyAlertsData[dayOfMonth] += entry.alertPerHour;
-        }
+        const dayOfMonth = getDate(entryDate) - 1;
+        monthlyAlertsData[dayOfMonth].alerts = entry.alertPerHour;
+        monthlyAlertsData[dayOfMonth].date = entry.date;
       });
       const newChartData = {
         labels: Array.from({ length: daysInMonth }, (_, i) =>
@@ -341,11 +373,17 @@ const GadgetMainChart = ({ title = "" }) => {
         ),
         datasets: [
           {
-            data: [...monthlyAlertsData], // Create a new array
+            label: "Dates",
+            data: monthlyAlertsData.map((data) => data.date),
+            hidden: true, // Hide this dataset from the chart
+          },
+          {
+            label: "Alerts",
+            data: monthlyAlertsData.map((data) => data.alerts),
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
             borderRadius: 5,
-            barThickness: 5, // Non-zero value
+            // barThickness: 5,
           },
         ],
       };
@@ -367,30 +405,25 @@ const GadgetMainChart = ({ title = "" }) => {
       setLoading(false);
     }
   };
-
   const handleYearlyView = async () => {
     try {
       setLoading(true);
-      const endOfCurrentYear = endOfYear(startOfCurrentYear);
-      const yearlyAlertsData = Array(12).fill(0);
+      const yearlyAlertsData = Array.from({ length: 12 }, () => ({
+        date: null,
+        alerts: 0,
+      }));
 
       const response = await getAverageFaceDetectionHistoryDataByYear(
         user.company_id,
         startOfCurrentYear
       );
       updateChartDataStates(response);
-
+      console.log(response);
       response.data.forEach((entry) => {
         const entryDate = parseISO(entry.date);
-        if (
-          isWithinInterval(entryDate, {
-            start: startOfCurrentYear,
-            end: endOfCurrentYear,
-          })
-        ) {
-          const monthOfYear = getMonth(entryDate);
-          yearlyAlertsData[monthOfYear] += entry.alertPerHour;
-        }
+        const monthOfYear = getMonth(entryDate);
+        yearlyAlertsData[monthOfYear].alerts = entry.alertPerHour;
+        yearlyAlertsData[monthOfYear].date = entry.date;
       });
       const newChartData = {
         labels: [
@@ -409,11 +442,17 @@ const GadgetMainChart = ({ title = "" }) => {
         ],
         datasets: [
           {
-            data: [...yearlyAlertsData], // Create a new array
+            label: "Dates",
+            data: yearlyAlertsData.map((data) => data.date),
+            hidden: true, // Hide this dataset from the chart
+          },
+          {
+            label: "Alerts",
+            data: yearlyAlertsData.map((data) => data.alerts),
             backgroundColor: theme.palette.primary.main,
             borderColor: theme.palette.primary.main,
             borderRadius: 5,
-            barThickness: 5, // Non-zero value
+            // barThickness: 5,
           },
         ],
       };
@@ -547,16 +586,20 @@ const GadgetMainChart = ({ title = "" }) => {
             />
           </Grid>
         </Box>
-        <Box sx={{ height: "300px", width: "100%" }}>
-          {chartData && chartData.datasets && chartData.datasets[0].data ? (
-            <Bar
-              data={chartData}
-              options={options}
-              key={windowWidth}
-              ref={chartRef}
-            />
+        <Box sx={{ height: "300px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          { loading ? (
+            <CircularProgress />
+          ) : (
+            chartData && chartData.datasets && chartData.datasets[0].data ? (
+              <Bar
+                data={chartData}
+                options={options}
+                key={windowWidth}
+                ref={chartRef}
+              />
           ) : (
             <Typography>No data available</Typography>
+          )
           )}
         </Box>
         <Grid

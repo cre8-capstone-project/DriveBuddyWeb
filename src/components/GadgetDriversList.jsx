@@ -147,7 +147,7 @@ const GadgetDriversList = ({ title = "" }) => {
     } else if (mode === "year-simple") {
       handleYearlyView();
     }
-  }, [startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
+  }, [currentDay, startOfCurrentWeek, startOfCurrentMonth, startOfCurrentYear]);
 
   const handleModeChange = (event, newMode) => {
     if (newMode) {
@@ -156,7 +156,6 @@ const GadgetDriversList = ({ title = "" }) => {
   };
   const updateDriversWithFaceData = (driversData, faceData) => {
     try {
-      setLoading(true);
       const updatedDrivers = [];
       faceData.data.forEach((entry) => {
         const driver = driversData.find((item) => item.id === entry.userId);
@@ -175,35 +174,43 @@ const GadgetDriversList = ({ title = "" }) => {
   };
 
   const handleDailyView = async () => {
+    setLoading(true);
     const response = await getFaceDetectionSummaryByDay(
       user.company_id,
       currentDay
     );
     updateDriversWithFaceData(drivers, response);
+    setLoading(false);
   };
 
   const handleWeeklyView = async () => {
+    setLoading(true);
     const response = await getFaceDetectionSummaryByWeek(
       user.company_id,
       startOfCurrentWeek
     );
     updateDriversWithFaceData(drivers, response);
+    setLoading(false);
   };
 
   const handleMonthlyView = async () => {
+    setLoading(true);
     const response = await getFaceDetectionSummaryByMonth(
       user.company_id,
       startOfCurrentMonth
     );
     updateDriversWithFaceData(drivers, response);
+    setLoading(false);
   };
 
   const handleYearlyView = async () => {
+    setLoading(true);
     const response = await getFaceDetectionSummaryByYear(
       user.company_id,
       startOfCurrentYear
     );
     updateDriversWithFaceData(drivers, response);
+    setLoading(false);
   };
 
   const handleNext = () => {
