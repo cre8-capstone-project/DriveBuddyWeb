@@ -6,3 +6,10 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+
+.MuiDrawer-root.MuiDrawer-docked {
+  width: 220px !important;
+}
+.MuiDrawer-root.MuiDrawer-docked .MuiDrawer-paper {
+  width: 220px !important;
+}

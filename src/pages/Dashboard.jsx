@@ -39,14 +39,14 @@ export const Dashboard = (props) => {
     >
       <Grid container spacing={2} sx={{ width: "100%", padding: "0.5rem" }}>
         {/* LEFT COLUMN */}
-        <Grid xs={12} md={8} flexGrow={isOneColumn ? 1 : 0}>
+        <Grid size={{ xs: 12, sm: 12, md: 6 , lg: 7}}> 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <GadgetMainChart title="Average of all drivers" />
           </Box>
         </Grid>
 
         {/* RIGHT COLUMN */}
-        <Grid xs={12} md={4} flexGrow={isOneColumn ? 1 : 1}>
+        <Grid size={{ xs: 12, sm: 12, md: 6, lg: 5}}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <GadgetDriversList title="Individual report" />
           </Box>
