@@ -277,7 +277,6 @@ const GadgetDriversList = ({ title = "" }) => {
           container
           justifyContent={"center"}
           width={"100%"}
-          paddingY={"0.5rem"}
         >
           <Box width={{ md: "100%", lg: "65%" }}>
             <WeekPicker
