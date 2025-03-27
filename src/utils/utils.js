@@ -1,8 +1,11 @@
+import { format } from "date-fns-tz";
+
 export const setPageTitle = (title) => {
   document.title = title || "DriveBuddy";
 };
 export const formatDate = (date) => {
-  return date.toISOString().split("T")[0];
+  const timeZone = "America/Vancouver";
+  return format(date, "yyyy-MM-dd", { timeZone });
 };
 export const generateInvitationCode = () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
