@@ -90,8 +90,8 @@ const theme = createTheme({
     // Headings will use Figtree
     h1: {
       fontFamily: "'Figtree', 'Arial', sans-serif",
-      fontSize: "3rem",
-      fontWeight: 400,
+      fontSize: "2.5rem",
+      fontWeight: 700,
       color: "#333333",
     },
     h2: {

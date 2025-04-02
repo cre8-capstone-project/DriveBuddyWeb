@@ -34,7 +34,8 @@ export function AuthenticationOptions(props) {
           sx={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
+            gap: "1rem",
+            justifyContent: "space-evenly",
             alignItems: "center",
             minHeight: "100vh",
             padding: 4,
@@ -56,7 +57,7 @@ export function AuthenticationOptions(props) {
           <Typography
             variant="body1"
             align="center"
-            sx={{ width: setWidth, marginBottom: 3 }}
+            sx={{ width: setWidth, marginBottom: 3, maxWidth: "600px" }}
           >
             DriveBuddy is a mobile app for ride-share and long-haul drivers to
             help them stay alert and safe while driving.
@@ -65,8 +66,7 @@ export function AuthenticationOptions(props) {
           {/* Button linking to CreateProgram.jsx */}
           <Button
             variant="contained"
-            color="primary"
-            sx={{ marginBottom: 1 }}
+            sx={{ marginBottom: 1, color: "white !important" }}
             component={NavLink}
             to="/signup"
           >

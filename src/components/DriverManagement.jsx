@@ -19,6 +19,8 @@ import {
   Typography,
   Box,
   TablePagination,
+  Grid2,
+  Skeleton,
 } from "@mui/material";
 //import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
@@ -27,6 +29,7 @@ import { useAuth } from "../utils/AuthProvider";
 import { generateInvitationCode, capitalizeFirstLetter } from "../utils/utils";
 import "./DriverManagement.css";
 import { GadgetBase } from "./GadgetBase.jsx";
+import { useNotifications } from "@toolpad/core/useNotifications";
 import {
   getDriversByCompany,
   getInvitationsByCompany,
@@ -36,8 +39,10 @@ import theme from "../theme.js";
 
 const DriverManagement = () => {
   const { user } = useAuth();
+  const notifications = useNotifications();
   //const navigate = useNavigate();
   const [page, setPage] = useState(0);
+  const [sendingInvitation, setSendingInvitation] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -149,6 +154,8 @@ const DriverManagement = () => {
   };
 
   const handleSave = async () => {
+    if (sendingInvitation) return;
+    setSendingInvitation(true);
     if (formData.id) {
       setDrivers(drivers.map((d) => (d.id === formData.id ? formData : d)));
     } else {
@@ -176,17 +183,27 @@ const DriverManagement = () => {
           recipient_name: newDriver.name,
           recipient_email: newDriver.email,
         });
+
+        setSendingInvitation(false);
+        notifications.show("Email sent successfully", {
+          severity: "success",
+          autoHideDuration: 5000,
+        });
         await fetchDriversAndInvitations();
       } catch (error) {
         console.error("Failed to send email:");
         console.log(error);
+        notifications.show("Email could not be sent", {
+          severity: "error",
+          autoHideDuration: 10000,
+        });
       }
     }
     handleClose();
   };
 
   return (
-    <GadgetBase sx={{ width: "100%", height: "fit-content" }}>
+    <GadgetBase sx={{ width: "100%", height: "100%" }}>
       <Box
         sx={{
           width: "100%",
@@ -210,7 +227,7 @@ const DriverManagement = () => {
           Add Driver
         </Button>
       </Box>
-      <Box width={"100%"}>
+      <Box width={"100%"} height={"100%"}>
         <TableContainer component={Paper} style={{ marginTop: 2 }} width="100%">
           <Table>
             <TableHead>
@@ -234,13 +251,34 @@ const DriverManagement = () => {
             </TableHead>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={5}>
-                    <Typography variant="body1" sx={{ textAlign: "center" }}>
-                      Loading...
-                    </Typography>
-                  </TableCell>
-                </TableRow>
+                Array.from([1, 2, 3, 4]).map((index) => (
+                  <TableRow key={index}>
+                    <TableCell colSpan={5}>
+                      <Grid2
+                        display={"flex"}
+                        direction={"row"}
+                        alignItems={"center"}
+                        gap={5}
+                        padding={0}
+                      >
+                        <Skeleton
+                          variant="circular"
+                          animation="wave"
+                          width={50}
+                          height={50}
+                          display={"flex"}
+                        />
+                        <Skeleton
+                          variant="rectangular"
+                          width={"100%"}
+                          animation="wave"
+                          height={25}
+                          display={"flex"}
+                        />
+                      </Grid2>
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : drivers && drivers.length > 0 ? (
                 drivers
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -328,29 +366,44 @@ const DriverManagement = () => {
       </Box>
 
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{formData.id ? "Edit Driver" : "Add Driver"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
+        <DialogTitle sx={{ textAlign: "center" }}>Add Driver</DialogTitle>
+        <DialogContent sx={{ maxWidth: "450px" }}>
+          <Typography variant="body2" sx={{ marginY: "0.5rem" }}>
+            The driver will receive an email with a 6-digit invitation code to
+            fill in when they create an account
+          </Typography>
+          <form>
+            <TextField
+              fullWidth
+              required
+              margin="dense"
+              label="Driver name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth
+              required
+              margin="dense"
+              label="Driver email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave} color="primary">
-            Save
+          <Button onClick={handleClose} disabled={sendingInvitation}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            color="primary"
+            type="submit"
+            disabled={sendingInvitation}
+          >
+            Send invitation
           </Button>
         </DialogActions>
       </Dialog>

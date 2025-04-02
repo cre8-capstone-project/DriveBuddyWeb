@@ -49,7 +49,7 @@ export const MainLayout = () => {
     user: {
       name: user?.name || "",
       email: user?.email || "",
-      image: "",
+      image: user?.picture_url || "",
     },
   });
 

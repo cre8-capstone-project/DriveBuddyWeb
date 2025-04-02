@@ -72,21 +72,22 @@ button:focus-visible {
   background: rgb(255, 255, 255);
   background: -moz-linear-gradient(
     0deg,
-    rgba(255, 255, 255, 1) 44%,
-    rgba(0, 255, 255, 1) 100%
+    rgba(255, 255, 255, 1) 65%,
+    rgb(155, 252, 252) 100%
   );
   background: -webkit-linear-gradient(
     0deg,
-    rgba(255, 255, 255, 1) 44%,
-    rgba(0, 255, 255, 1) 100%
+    rgba(255, 255, 255, 1) 65%,
+    rgb(155, 252, 252) 100%
   );
   background: linear-gradient(
     0deg,
-    rgba(255, 255, 255, 1) 44%,
-    rgba(0, 255, 255, 1) 100%
+    rgba(255, 255, 255, 1) 65%,
+    rgb(155, 252, 252) 100%
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ffffff",endColorstr="#00ffff",GradientType=1);
 }
+
 /* whiteBackground.css */
 .white-background {
   background: rgb(255, 255, 255);

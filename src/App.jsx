@@ -6,6 +6,7 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+import { NotificationsProvider } from "@toolpad/core/useNotifications";
 import { AuthProvider } from "./utils/AuthProvider";
 import { MainLayout } from "./layouts/MainLayout";
 import { SignIn } from "./pages/SignIn";
@@ -47,47 +48,52 @@ function ProtectedRoutes() {
 
   return (
     <>
-      <RouterProvider
-        router={createBrowserRouter(
-          createRoutesFromElements(
-            <>
-              {/* No authentication required */}
-              <Route
-                path="/enter"
-                element={
-                  <AuthenticationOptions title="Welcome to DriveBuddy" />
-                }
-              />
-              <Route path="/signin" element={<SignIn title="Sign In" />} />
-              <Route path="/signup" element={<SignUp title="Sign Up" />} />
-
-              {/* Authentication required */}
-              <Route
-                path="/"
-                element={user ? <MainLayout /> : <Navigate to="/signin" />}
-              >
+      <NotificationsProvider>
+        <RouterProvider
+          router={createBrowserRouter(
+            createRoutesFromElements(
+              <>
+                {/* No authentication required */}
                 <Route
-                  index
+                  path="/enter"
+                  element={
+                    <AuthenticationOptions title="Welcome to DriveBuddy" />
+                  }
+                />
+                <Route path="/signin" element={<SignIn title="Sign In" />} />
+                <Route path="/signup" element={<SignUp title="Sign Up" />} />
+
+                {/* Authentication required */}
+                <Route
                   path="/"
-                  element={<Dashboard title="Dashboard" />}
-                />
-                <Route
-                  path="/manage"
-                  element={<Manage title="Manage Drivers" />}
-                />
-                <Route path="/profile" element={<Profile title="Company" />} />
-                <Route path="/driver/:id" element={<DriverDetails />} />
-              </Route>
+                  element={user ? <MainLayout /> : <Navigate to="/signin" />}
+                >
+                  <Route
+                    index
+                    path="/"
+                    element={<Dashboard title="Dashboard" />}
+                  />
+                  <Route
+                    path="/manage"
+                    element={<Manage title="Manage Drivers" />}
+                  />
+                  <Route
+                    path="/profile"
+                    element={<Profile title="Company" />}
+                  />
+                  <Route path="/driver/:id" element={<DriverDetails />} />
+                </Route>
 
-              <Route
-                path="/error"
-                element={<ServerError title="Server Error" />}
-              />
-              <Route path="*" element={<NotFound title="Not Found" />} />
-            </>
-          )
-        )}
-      />
+                <Route
+                  path="/error"
+                  element={<ServerError title="Server Error" />}
+                />
+                <Route path="*" element={<NotFound title="Not Found" />} />
+              </>
+            )
+          )}
+        />
+      </NotificationsProvider>
     </>
   );
 }

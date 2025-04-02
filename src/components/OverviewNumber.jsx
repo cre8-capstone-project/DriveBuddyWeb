@@ -22,7 +22,7 @@ export const OverviewNumber = ({
     >
       <Typography
         variant="body1"
-        sx={{ fontSize: "1.8rem", fontWeight: "500" }}
+        sx={{ fontSize: "1.9rem", fontWeight: "700" }}
       >
         {number}
       </Typography>

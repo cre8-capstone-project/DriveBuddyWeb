@@ -1,7 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
-import { Box, Typography, Grid2 as Grid, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid2 as Grid,
+  CircularProgress,
+} from "@mui/material";
 import { GadgetBase } from "./GadgetBase";
 import { WeekPicker } from "./WeekPicker";
 import {
@@ -98,16 +103,16 @@ const GadgetMainChart = ({ title = "" }) => {
         yAlign: "bottom",
         callbacks: {
           title: function () {
-            return 'Total'
+            return "Total";
           },
           label: function (context) {
             const index = context.dataIndex;
             const rawDate = context.chart.data.datasets[0].data[index];
             let formattedDate = "N/A";
             if (modeRef.current === "year-simple") {
-              formattedDate = format(parseISO(rawDate), "MMM yyyy")
+              formattedDate = format(parseISO(rawDate), "MMM yyyy");
             } else {
-              formattedDate = format(parseISO(rawDate), "MMM dd, yyyy")
+              formattedDate = format(parseISO(rawDate), "MMM dd, yyyy");
             }
 
             const hour = String(index).padStart(2, "0");
@@ -117,11 +122,20 @@ const GadgetMainChart = ({ title = "" }) => {
             const alerts = context.chart.data.datasets[1].data[index];
 
             if (modeRef.current === "day-simple") {
-              return [`${alerts ?? 0} alerts received/hour`,`${fullDateTime ?? 'N/A'}`];
+              return [
+                `${alerts ?? 0} alerts received/hour`,
+                `${fullDateTime ?? "N/A"}`,
+              ];
             } else if (modeRef.current === "year-simple") {
-              return [`${alerts ?? 0} alerts received/hour`,`${formattedDate ?? 'N/A'}`];
+              return [
+                `${alerts ?? 0} alerts received/hour`,
+                `${formattedDate ?? "N/A"}`,
+              ];
             } else {
-              return [`${alerts ?? 0} alerts received/hour`,`${formattedDate ?? 'N/A'}`];
+              return [
+                `${alerts ?? 0} alerts received/hour`,
+                `${formattedDate ?? "N/A"}`,
+              ];
             }
           },
         },
@@ -153,7 +167,9 @@ const GadgetMainChart = ({ title = "" }) => {
       {
         label: "Alerts received/Hour",
         data: [0, 0, 0, 0, 0, 0, 0],
-        backgroundColor: theme.palette.primary.main,
+        //backgroundColor: theme.palette.primary.main,
+        fillColor:
+          "linear-gradient(0deg, rgba(255,255,255,1) 0%, rgba(0,255,255,1) 12%, rgba(17,30,68,1) 100%)",
         borderColor: theme.palette.primary.main,
         borderRadius: 5,
         barThickness: 0,
@@ -245,10 +261,7 @@ const GadgetMainChart = ({ title = "" }) => {
       updateChartDataStates(response);
       console.log(response);
       response.data.forEach((entry) => {
-        const hourOfDay = parseInt(
-          entry.date.split(" ")[1].split(":")[0],
-          10
-        );
+        const hourOfDay = parseInt(entry.date.split(" ")[1].split(":")[0], 10);
         dailyAlertsData[hourOfDay].alerts = entry.alertPerHour;
         dailyAlertsData[hourOfDay].date = entry.date;
       });
@@ -586,20 +599,26 @@ const GadgetMainChart = ({ title = "" }) => {
             />
           </Grid>
         </Box>
-        <Box sx={{ height: "300px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          { loading ? (
+        <Box
+          sx={{
+            height: "300px",
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {loading ? (
             <CircularProgress />
-          ) : (
-            chartData && chartData.datasets && chartData.datasets[0].data ? (
-              <Bar
-                data={chartData}
-                options={options}
-                key={windowWidth}
-                ref={chartRef}
-              />
+          ) : chartData && chartData.datasets && chartData.datasets[0].data ? (
+            <Bar
+              data={chartData}
+              options={options}
+              key={windowWidth}
+              ref={chartRef}
+            />
           ) : (
             <Typography>No data available</Typography>
-          )
           )}
         </Box>
         <Grid

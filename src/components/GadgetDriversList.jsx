@@ -165,6 +165,7 @@ const GadgetDriversList = ({ title = "" }) => {
         }
         updatedDrivers.push(driver);
       });
+      updatedDrivers.sort((a, b) => b.alertPerHour - a.alertPerHour);
       setDrivers(updatedDrivers);
     } catch (e) {
       console.error("Error updating drivers: " + e);
@@ -237,9 +238,9 @@ const GadgetDriversList = ({ title = "" }) => {
     }
   };
   const getTextColor = (number) => {
-    if (number === 0) {
+    if (number >= 0 && number < 10) {
       return "#2e7d32";
-    } else if (number >= 1 && number <= 2) {
+    } else if (number >= 10 && number <= 100) {
       return "#1e3a8a";
     } else {
       return "#d32f2f";
@@ -273,11 +274,7 @@ const GadgetDriversList = ({ title = "" }) => {
           <Typography variant="h4">{title}</Typography>
           <PeriodButtonGroup mode={mode} handleModeChange={handleModeChange} />
         </Grid>
-        <Grid
-          container
-          justifyContent={"center"}
-          width={"100%"}
-        >
+        <Grid container justifyContent={"center"} width={"100%"}>
           <Box width={{ md: "100%", lg: "65%" }}>
             <WeekPicker
               onClickNextWeek={handleNext}
@@ -302,13 +299,34 @@ const GadgetDriversList = ({ title = "" }) => {
               </TableHead>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={3}>
-                      <Typography variant="body1" sx={{ textAlign: "center" }}>
-                        Loading...
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
+                  Array.from([1, 2, 3, 4]).map((index) => (
+                    <TableRow key={index}>
+                      <TableCell colSpan={5}>
+                        <Grid
+                          display={"flex"}
+                          direction={"row"}
+                          alignItems={"center"}
+                          gap={1}
+                          padding={0}
+                        >
+                          <Skeleton
+                            variant="circular"
+                            animation="wave"
+                            width={50}
+                            height={45}
+                            display={"flex"}
+                          />
+                          <Skeleton
+                            variant="rectangular"
+                            width={"100%"}
+                            animation="wave"
+                            height={25}
+                            display={"flex"}
+                          />
+                        </Grid>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : drivers && drivers.length > 0 ? (
                   drivers
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
