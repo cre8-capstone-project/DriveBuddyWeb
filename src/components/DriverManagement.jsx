@@ -328,8 +328,8 @@ const DriverManagement = () => {
                         {driver.invitation
                           ? driver.invitation.acceptedAt
                             ? new Timestamp(
-                                driver.invitation.acceptedAt._seconds,
-                                driver.invitation.acceptedAt._nanoseconds
+                                driver.invitation.acceptedAt.seconds,
+                                driver.invitation.acceptedAt.nanoseconds
                               )
                                 .toDate()
                                 .toDateString()
